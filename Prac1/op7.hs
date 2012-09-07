@@ -13,4 +13,4 @@ getn s v i = head (drop (i - 1) (take i (rlist s v)))
 -- Hier heb ik gebruik gemaakt van de ingebouwde sum methode, omdat ik in opgave 6 al bewezen heb
 -- een lijst te kunnen optellen
 getsum :: Number -> Number -> Number -> Number -> Number
-getsum s v i j = sum( drop (i) (take j (rlist s v)))
+getsum s v i j = sum( drop (i - 1) (take j (rlist s v)))

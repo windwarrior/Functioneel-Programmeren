@@ -14,6 +14,7 @@ myreverse [] = []
 myreverse (x:xs) = myreverse xs ++ (x : [])
 
 mytake :: [a] -> Int -> [a]
+mytake [] n = []
 mytake (x:xs) 0 = []
 mytake (x:xs) n = x :  mytake xs (n-1)
 
