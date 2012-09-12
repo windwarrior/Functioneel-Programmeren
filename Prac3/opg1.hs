@@ -24,13 +24,31 @@ example1b = Node1b (12,24) (Leaf1b(1,3)) (Leaf1b (2,8))
 
 -- --------------------------------------------------------------------------------------------------------
 
-data Tree1c = Leaf1c Number	| Node1c Number Tree1c Tree1c
+data Tree1c = Leaf1c 	| Node1c Number Tree1c Tree1c
 
 pp1c :: Tree1c -> RoseTree
-pp1c (Leaf1c number) = RoseNode  "" []
+pp1c Leaf1c = RoseNode  "" []
 pp1c (Node1c number child1 child2) = RoseNode (show number) [pp1c(child1), pp1c(child2)]
 
-example1c = Node1c 12 (Node1c 18 (Leaf1c 1) (Leaf1c 2)) (Node1c 16 (Leaf1c 1) (Leaf1c 2))
+example1c = Node1c 12 
+	(Node1c 10 
+		(Node1c 4 
+			(Node1c 3 Leaf1c Leaf1c)
+			Leaf1c
+		)
+		Leaf1c
+	) 
+	(Node1c 18 Leaf1c Leaf1c)
+
+example1c2 = Node1c 12 
+	(Node1c 2 
+		(Node1c 4 
+			(Node1c 98 Leaf1c Leaf1c)
+			Leaf1c
+		)
+		Leaf1c
+	) 
+	(Node1c 10 Leaf1c Leaf1c)
 
 -- --------------------------------------------------------------------------------------------------------
 
