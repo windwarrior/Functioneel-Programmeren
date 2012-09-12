@@ -14,4 +14,7 @@ myfoldr :: (b -> a -> a) -> a -> [b] -> a
 myfoldr f z [] = z
 myfoldr f z (x:xs) = f (x) (myfoldr f z xs )
 
---myzipWith :: (a -> b -> c) -> [a] -> [b] -> [c] 
+myZipWith :: (a -> b -> c) -> [a] -> [b] -> [c] 
+myzipWith f [] _ = []
+myzipWith f _ [] = []
+myZipWith f (x:xs) (y:ys)  = (f x y) : myZipWith f xs ys

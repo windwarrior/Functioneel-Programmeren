@@ -1,0 +1,22 @@
+import FPPrac
+import Prelude (Bool)
+import Data.Int
+
+allEqual :: [Int] -> Bool
+allEqual [] = True
+allEqual (x:xs) 
+    | xs == [] = True    
+    | otherwise = x == head xs && allEqual xs
+
+isRR :: [Int] -> Bool
+isRR [] = True
+isRR [a] = allEqual(calcDiff [a])
+
+calcDiff :: [Number] -> [Number]
+calcDiff [] = []
+calcDiff (x:xs) 
+    | xs == [] = []
+    | otherwise = (first - second) ++ calcDiff(xs)
+    where 
+        first = x
+        second = head xs

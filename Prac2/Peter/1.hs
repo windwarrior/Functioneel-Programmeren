@@ -14,6 +14,7 @@ myfoldr :: (b -> a -> a) -> a -> [b] -> a
 myfoldr f a [] = a
 myfoldr f a (x:xs) =  f x (myfoldr f a xs)
 
+-- @peter1991 deze methode klopt niet? --
 myzipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
 myzipWith f [] _ = []
 myzipWith f _ [] = []
