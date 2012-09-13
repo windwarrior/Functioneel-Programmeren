@@ -10,7 +10,12 @@ pp1a :: Tree1a -> RoseTree
 pp1a (Leaf1a number) = RoseNode (show number) []
 pp1a (Node1a number child1 child2) = RoseNode (show number) [pp1a(child1), pp1a(child2)]
 
-example1a = Node1a 12 (Leaf1a 1) (Leaf1a 2)
+example1a = Node1a 12 
+	(Node1a 4 
+		(Leaf1a 3)
+		(Leaf1a 6)
+	) 
+	(Leaf1a 2)
 
 -- --------------------------------------------------------------------------------------------------------
 
@@ -43,7 +48,7 @@ example1c = Node1c 12
 example1c2 = Node1c 12 
 	(Node1c 2 
 		(Node1c 4 
-			(Node1c 98 Leaf1c Leaf1c)
+			Leaf1c
 			Leaf1c
 		)
 		Leaf1c
