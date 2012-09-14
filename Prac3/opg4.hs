@@ -1,3 +1,4 @@
+module Opg4 where
 import FPPrac
 import Prelude (Bool)
 import Prelude (Int)
@@ -33,4 +34,4 @@ sortList xs = makeList (makeTree xs)
 -- --------------------------------------------------------------------------------------------------------
 
 sortTree :: Tree1c -> Tree1c
-sortTree tree = makeTreeRec (makeList tree)
+sortTree tree = makeTree (makeList tree)
