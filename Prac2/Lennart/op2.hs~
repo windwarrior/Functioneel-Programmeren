@@ -36,27 +36,14 @@ incAgeL x n = [(getName i, (getAge i) + n, getGender i , getCity i) | i <- x]
 incAgeM :: [(String,Int,Char,String)] -> Int -> [(String,Int,Char,String)]
 incAgeM x n = map (\(name, age, gender, city) -> (name, age + n, gender, city)) x
 
-getNameFemaleAge30to40R :: [(String, Int, Char, String)]  -> [(String, Int, Char, String)]
-getNameFemaleAge30to40R [] = []
-getNameFemaleAge30to40R (x:xs)
-    | getAge x >= 30 && getAge x < 40 && getGender x == 'v' = x : getNameFemaleAge30to40R xs
-    | otherwise = getNameFemaleAge30to40R xs
+getNameR :: [(String, Int, Char, String)]  -> [(String, Int, Char, String)]
+getNameR [] = []
+getNameR (x:xs)
+    | getAge x >= 30 && getAge x < 40 && getGender x == 'v' = x : getNameR xs
+    | otherwise = getNameR xs
 
-getNameFemaleAge30to40L :: [(String, Int, Char, String)]  -> [(String, Int, Char, String)]
-getNameFemaleAge30to40L x = [(getName i, getAge i, getGender i , getCity i) | i <- x, getAge i >= 30, getAge i < 40, getGender i == 'v']
+getNameL :: [(String, Int, Char, String)]  -> [(String, Int, Char, String)]
+getNameL x = [(getName i, getAge i, getGender i , getCity i) | i <- x, getAge x >= 30, getAge x < 40, getGender x == 'v']
 
-getNameFemaleAge30to40F :: [(String, Int, Char, String)]  -> [(String, Int, Char, String)]
-getNameFemaleAge30to40F x = filter (\(name,age,gender,city) ->  age>=30 && age<40 && gender=='v') x
-
-getAgeByName :: [(String, Int, Char, String)] -> String -> Int
-getAgeByName [] s = -1
-getAgeByName (x:xs) s
-    | map toLower (getName x) == map toLower s = getAge(x)
-    | otherwise = getAgeByName xs s
-
-
-sortByAge ::  [(String,Int,Char,String)] ->  [(String,Int,Char,String)]
-sortByAge xs = map swap (sort (map swap xs))
-
-swap (t0, t1, t2, t3) = (t1, t0, t2, t3)
-
+getNameM :: [(String, Int, Char, String)]  -> [(String, Int, Char, String)]
+getNameM x = filter(\(name,age,gender,city) ->  age>=30 && age<40 && gender=='v') xs
