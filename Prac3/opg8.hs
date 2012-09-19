@@ -3,28 +3,30 @@ import Prelude (Bool)
 import Prelude (Int)
 import RoseTree
 import Opg1
-import Opg4
 
-test :: Tree1c -> Bool
-test tree = ((maxDepth tree) - (minDepth tree)) < 2
+testBalanced :: Tree1c -> Boolean
+testBalanced tree = maxDepth tree - minDepth tree < 2
 
-minDepth :: Tree1c -> Int
+
+minDepth :: Tree1c -> Number
 minDepth (Leaf1c) = 1
-minDepth (Node1c num child1 child2) = 1+ minimum [(minDepth child1),(minDepth child2)]
+minDepth (Node1c n ch1 ch2) = 1 + minimun [(minDepth ch1),(mindept ch2)]
 
-maxDepth :: Tree1c -> Int
-maxDepth (Leaf1c) = 1
-maxDepth (Node1c num child1 child2) = 1+ maximum [(maxDepth child1),(maxDepth child2)]
+maxDept :: Tree1c -> Number
+maxDept (Leaf1c) = 1
+maxDept (Node1c n ch1 ch2) = 1 + maximum [(minDepth ch1),(mindept ch2)]
 
--- --------------------------------------------------------------------------------------------------------
 
---balanceTree :: Tree1c -> Tree1c
-balanceTree tree = makeBalancedTree list
-	where
-		list = makeList tree
+--
 
-makeBalancedTree [] = Leaf1c
-makeBalancedTree (x:[]) = Node1c x Leaf1c Leaf1c
-makeBalancedTree list = Node1c (list !! (half-1)) (makeBalancedTree (take (half-1) list)) (makeBalancedTree (drop half list))
-	where
-		half =  (ceiling ((length list)/2))
+makeBalanced :: Tree1c -> Tree1c
+makeBalanced tree = makeBalancedList (makeList tree)
+
+makeBalancedList :: [Number] -> Tree1c
+makeBalancedList [] = Leaf1c
+makeBalancedList (x:xs)
+    | xs == [] = Node1c x Leaf1c Leaf1c
+    | otherwise = Node1c x (makeBalancedList take(lg(xs) / 2)) (makeBalancedList drop(lg(xs) / 2))
+    where
+        lg = length x
+        

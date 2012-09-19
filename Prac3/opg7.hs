@@ -4,21 +4,16 @@ import Prelude (Int)
 import RoseTree
 import Opg1
 
-vervang :: Tree1a -> String -> Number -> Tree1a
-vervang (Leaf1a num) "" n = Leaf1a n
-vervang (Node1a num child1 child2) "" n = Node1a n child1 child2
-vervang (Node1a num child1 child2) (p:ps) n
-	| p=='l'	= Node1a num (vervang child1 ps n) child2
-	| p=='r'	= Node1a num child1 (vervang child2 ps n) 
-
--- --------------------------------------------------------------------------------------------------------
+vervang :: Tree1a -> String -> Number ->  Tree1a
+vervang (Leaf1a l) "" x = Leaf1a x
+vervang (Node1a n ch1 ch2) "" x = Node1a x ch1 ch2
+vervang (Node1a n ch1 ch2) (s:sx) x 
+    | s == 'l' = Node1a n (vervang ch1 sx x) ch2
+    | s == 'r' = Node1a n ch1 (vervamg ch2 sx x)
 
 subboom :: Tree1a -> String -> Tree1a
 subboom tree "" = tree
-subboom (Leaf1a num) _ = error ("wrong path")
-subboom (Node1a num child1 child2) (p:ps)
-	| p=='l'	= subboom child1 ps
-	| p=='r'	= subboom child2 ps
-
--- --------------------------------------------------------------------------------------------------------
-
+subboom (Leaf1a l) (s:sx) = error ("nope!")
+subboom (Node1a n ch1 ch2) (s:sx)  
+    | s == 'l' = subboom ch1 sx
+    | s == 'r' = subboom ch2 sx
