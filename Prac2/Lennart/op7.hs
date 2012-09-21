@@ -3,6 +3,7 @@ import Prelude (String)
 import Prelude (Int)
 import Data.Char
 
+--TODO het laatste element van bubble is al gesorteerd.
 bubbleSort :: [Number] -> [Number]
 bubbleSort x
     | x == bubble x = x

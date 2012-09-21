@@ -1,0 +1,13 @@
+  +
+ /\
+ * 6
+/\
+3 4
+
+string = "(3+4) * 5"
+
+1) haakje! dus een expressie
+2) 3! dus een nummer
+3) +! dus een operator
+4) 4! dus een nummer
+5) haakje! dus einde expressie

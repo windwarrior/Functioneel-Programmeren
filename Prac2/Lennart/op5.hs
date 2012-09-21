@@ -8,7 +8,7 @@ stijgend :: [Number] -> Bool
 stijgend [] = True
 stijgend (x:xs) 
     | xs == [] = True
-    | otherwise = x <= xs !! 0 && stijgend xs
+    | otherwise = x < xs !! 0 && stijgend xs
 
 zwakstijgend :: [Number] -> Bool
 zwakstijgend x = stijgend (getGem x 0 0)

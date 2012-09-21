@@ -9,7 +9,7 @@ list = [2..]
 
 zeef :: [Int] -> [Int]
 zeef [] = []
-zeef (x:xs) = x : zeef (filter (\a -> a `mod` x > 0) xs )
+zeef (x:xs) = x : zeef (filter (\a -> a `mod` x > 0) xs ) 
 
 isPrime :: Int -> Bool
 isPrime x =  l !! ((length l) - 1) == x

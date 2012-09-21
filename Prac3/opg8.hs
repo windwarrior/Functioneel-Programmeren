@@ -26,7 +26,7 @@ makeBalancedList :: [Number] -> Tree1c
 makeBalancedList [] = Leaf1c
 makeBalancedList (x:xs)
     | xs == [] = Node1c x Leaf1c Leaf1c
-    | otherwise = Node1c x (makeBalancedList take(lg(xs) / 2)) (makeBalancedList drop(lg(xs) / 2))
+    | otherwise = Node1c x (makeBalancedList $ take (lg / 2) xs) (makeBalancedList $ drop (lg / 2) xs)
     where
-        lg = length x
+        lg = length xs
         

@@ -1,4 +1,4 @@
-module Opg1 where
+module Types where
 import FPPrac
 import Prelude (Bool)
 import Prelude (Int)

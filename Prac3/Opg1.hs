@@ -57,16 +57,16 @@ example1c2 = Node1c 12
 
 -- --------------------------------------------------------------------------------------------------------
 
-data Tree1d = Leaf1d (Number,Number)	| Node1d (Number,Number) Tree1d Tree1d
+data Tree1d = Leaf1d (Number,Number)	| Node1d (Number,Number) [Tree1d]
 
 pp1d :: Tree1d -> RoseTree
 pp1d (Leaf1d tuple) = RoseNode (show tuple) []
-pp1d (Node1d tuple child1 child2) = RoseNode ("") [pp1d(child1), pp1d(child2)]
+pp1d (Node1d tuple children) = RoseNode ("") [pp1d (i) | i <- children]
 
 example1d = Node1d (12,24) 
 	(Node1d (12,24) 
-		(Leaf1d(1,3)) 
-		(Leaf1d (2,8))) 
+		[(Leaf1d(1,3)), 
+		(Leaf1d (2,8)))] 
 	(Node1d (12,24) 
 		(Leaf1d(1,3)) 
 		(Leaf1d (2,8)))
