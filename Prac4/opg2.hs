@@ -128,5 +128,16 @@ evalTree (BinNode operator child1 child2)
 	| operator == Multiply = (evalTree (child1)) * (evalTree (child2))
 	| operator == Divide   = (evalTree (child1)) / (evalTree (child2))
 	| operator == Power    = (evalTree (child1)) ^ (evalTree (child2))
-	
-assign :: Char -> Number
+
+evalExp2 :: (Char -> Number) -> String -> Number
+evalExp2 f x = evalTree postProcessed
+	where 
+		preProcessed = (fst (parseExpVar E x))
+		postProcessed = (f preProcessed)
+		
+
+assign :: Char -> Number -> (BinTree Operator EitherNumberChar -> BinTree Operator EitherNumberChar)
+assign c n (BinNode op ch1 ch2) = (BinNode op (assign(c n ch1)) (assign(c n ch2)))
+assign c n (BinLeaf char)
+	| c == char = (BinLeaf Left n)
+	| otherwise = (BinLeaf Right char)
