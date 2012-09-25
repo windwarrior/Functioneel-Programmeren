@@ -18,7 +18,7 @@ data StateTp = StateTp { mode :: Bool
                        }
 
 initstate = StateTp { mode = False
-                    , rbts = [ exampleTree, exampleTree, exampleTree ]
+                    , rbts = [ (pp baseTree2), (pp flippedBaseTree2) ]
                     }
 
 main = installEventHandler "RBrun" doE initstate (drawTrees m 200 ts) 25
