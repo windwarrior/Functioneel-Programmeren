@@ -1,5 +1,6 @@
 import FPPrac
 import TypesBinTree
+import Prelude (Bool)
 import Data.Char (isNumber)
 -- atoi :: String -> Number (integral)
 -- atof :: String -> Number (floating)
@@ -8,6 +9,7 @@ data Types = E | G | O | H
 data Operator = Plus | Min | Multiply | Divide | Power
 	deriving (Show, Eq)
 type EitherNumberChar = Either Number Char
+
 parseOperator :: Char -> Operator -- (BinTree Operator Number, String)
 parseOperator x
     | x == '+' = Plus 
@@ -129,15 +131,15 @@ evalTree (BinNode operator child1 child2)
 	| operator == Divide   = (evalTree (child1)) / (evalTree (child2))
 	| operator == Power    = (evalTree (child1)) ^ (evalTree (child2))
 
-evalExp2 :: (Char -> Number) -> String -> Number
-evalExp2 f x = evalTree postProcessed
+evalExp2 :: (BinTree Operator EitherNumberChar -> BinTree Operator Number) -> String -> Number
+evalExp2 f  x = evalTree postProcessed
 	where 
 		preProcessed = (fst (parseExpVar E x))
 		postProcessed = (f preProcessed)
 		
 
 assign :: Char -> Number -> (BinTree Operator EitherNumberChar -> BinTree Operator EitherNumberChar)
-assign c n (BinNode op ch1 ch2) = (BinNode op (assign(c n ch1)) (assign(c n ch2)))
+assign c n (BinNode op ch1 ch2) = (BinNode op (assign c n ch1) (assign c n ch2))
 assign c n (BinLeaf char)
-	| c == char = (BinLeaf Left n)
+	| c == Char && c == char = (BinLeaf Left n)
 	| otherwise = (BinLeaf Right char)
