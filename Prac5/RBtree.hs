@@ -1,2 +1,4 @@
-data Color = Red | Black
-data RBTree = RBLeaf Color | RBNode Color Number RBTree RBTree
+import FPPrac
+
+data My_Color = Red | Black
+data My_RBTree = My_RBLeaf Color | My_RBNode Color Number RBTree RBTree
