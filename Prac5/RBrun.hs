@@ -8,6 +8,7 @@ import FPPrac.Events
 import FPPrac.Graphics
 import RBgraphics
 import Prelude
+import RBtree
 
 -- ============= types ========================================================
 -- RBnode c v ts:   c=colour, v=value, ts=subtrees
