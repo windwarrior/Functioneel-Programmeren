@@ -1,3 +1,6 @@
+module RBtree where
+import FPPrac
+
 data My_Color = Red | Black
 	deriving (Show)
 data My_RBTree = My_RBLeaf Color | My_RBNode Color Number RBTree RBTree

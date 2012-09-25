@@ -66,3 +66,10 @@ exampleTree = RBnode black "9t"
                                        ]
                               ]
                      ]
+
+pp My_RBTree :: RBtree
+pp My_RBNode Black n ch1 ch2 = RBnode black (show n) [(pp ch1), (pp ch2)]
+pp My_RBNode Red n ch1 ch2 = RBnode reds (show n) [(pp ch1), (pp ch2)]
+pp My_RBLeaf Black = RBnode black "" []
+pp My_RBLeaf Red = RBnode red "" []
+
