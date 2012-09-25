@@ -141,5 +141,5 @@ evalExp2 f  x = evalTree postProcessed
 assign :: Char -> Number -> (BinTree Operator EitherNumberChar -> BinTree Operator EitherNumberChar)
 assign c n (BinNode op ch1 ch2) = (BinNode op (assign c n ch1) (assign c n ch2))
 assign c n (BinLeaf char)
-	| c == Char && c == char = (BinLeaf Left n)
+	| c Eq Right && c == char = (BinLeaf Left n)
 	| otherwise = (BinLeaf Right char)
