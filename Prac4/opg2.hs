@@ -5,6 +5,8 @@ import Data.Char (isNumber)
 -- atoi :: String -> Number (integral)
 -- atof :: String -> Number (floating)
 import Data.Either
+import RoseTree
+
 data Types = E | G | O | H
 data Operator = Plus | Min | Multiply | Divide | Power
 	deriving (Show, Eq)
@@ -17,6 +19,7 @@ parseOperator x
     | x == '*' = Multiply
     | x == '\\' = Divide
     | x == '^' = Power
+	| otherwise = error("trying to parse '" ++ x:"'")
 {-}
 parse :: String -> (BinTree Operator Number, String)
 parse (x:xs)
@@ -130,16 +133,38 @@ evalTree (BinNode operator child1 child2)
 	| operator == Multiply = (evalTree (child1)) * (evalTree (child2))
 	| operator == Divide   = (evalTree (child1)) / (evalTree (child2))
 	| operator == Power    = (evalTree (child1)) ^ (evalTree (child2))
+	
 
-evalExp2 :: (BinTree Operator EitherNumberChar -> BinTree Operator Number) -> String -> Number
-evalExp2 f  x = evalTree postProcessed
+evalExp2 :: (Char -> Number) -> String -> Number
+evalExp2 assign x = evalTree processed
 	where 
-		preProcessed = (fst (parseExpVar E x))
-		postProcessed = (f preProcessed)
+		processed = replVar assign (fst (parseExpVar E x))
 		
+		
+replVar :: (Char -> Number) -> BinTree Operator EitherNumberChar -> BinTree Operator Number
+replVar assign (BinLeaf (Left nr)) = BinLeaf nr
+replVar assign (BinLeaf (Right char)) = BinLeaf (assign char)
+replVar assign (BinNode o ch1 ch2) = BinNode o (replVar assign ch1) (replVar assign ch2)
 
-assign :: Char -> Number -> (BinTree Operator EitherNumberChar -> BinTree Operator EitherNumberChar)
-assign c n (BinNode op ch1 ch2) = (BinNode op (assign c n ch1) (assign c n ch2))
-assign c n (BinLeaf char)
-	| c Eq Right && c == char = (BinLeaf Left n)
-	| otherwise = (BinLeaf Right char)
+
+assignA :: Char -> Number
+assignA c
+	| c == 'a' = 12
+	| otherwise = 0
+
+evalExp3 :: (String -> Number) -> String -> Number
+evalExp3 assign x = evalTree processed
+	where 
+		processed = replVarStr assign (fst (parseExpSpaceMulti E x))
+	
+replVarStr :: (String -> Number) -> BinTree Operator EitherNumberString -> BinTree Operator Number
+replVarStr assign (BinLeaf (Left nr)) = BinLeaf nr
+replVarStr assign (BinLeaf (Right str)) = BinLeaf (assign str)
+replVarStr assign (BinNode o ch1 ch2) = BinNode o (replVarStr assign ch1) (replVarStr assign ch2)
+
+assignAuto :: String -> Number
+assignAuto str
+	| str == "auto" = 12
+	| otherwise = 0
+	
+	

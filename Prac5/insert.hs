@@ -1,5 +1,6 @@
+module Insert where
 import FPPrac
-import RBtree
+--import RBtree
 
 insert :: Number -> My_RBTree -> My_RBTree
 insert n (My_RBNode color num child1 child2) 
