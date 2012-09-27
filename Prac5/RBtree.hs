@@ -13,8 +13,8 @@ insert n (My_RBNode color num child1 child2)
 insert n (My_RBLeaf color) = My_RBNode Red n (My_RBLeaf Black) (My_RBLeaf Black)
 
 rootToBlack :: My_RBTree -> My_RBTree
-rootToBlack (My_RBNode Red num (My_RBLeaf Black) (My_RBNode Red c1 c2) = My_RBNode Black num (My_RBLeaf Red) (My_RBNode Red c1 c2)
-rootToBlack (My_RBNode Red num (My_RBNode Red c1 c2) (My_RBLeaf Black) = My_RBNode Black num (My_RBNode Red c1 c2) (My_RBLeaf Red) 
+rootToBlack (My_RBNode Red n1 (My_RBLeaf Black) (My_RBNode Red n2 c1 c2)) = My_RBNode Black n1 (My_RBLeaf Red) (My_RBNode Red n2 c1 c2)
+rootToBlack (My_RBNode Red n1 (My_RBNode Red n2 c1 c2) (My_RBLeaf Black)) = My_RBNode Black n1 (My_RBNode Red n2 c1 c2) (My_RBLeaf Red) 
 
 colourFlip :: My_RBTree -> My_RBTree
 -- colourFlip case 1
