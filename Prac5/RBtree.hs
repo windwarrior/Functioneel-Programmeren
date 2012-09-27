@@ -10,17 +10,177 @@ insert :: Number -> My_RBTree -> My_RBTree
 insert n (My_RBNode color num child1 child2) 
 	| n >= num = My_RBNode color num child1 (insert n child2)
 	| otherwise = My_RBNode color num (insert n child1) child2
-insert n (My_RBLeaf color) = My_RBNode Red n (My_RBLeaf Red) (My_RBLeaf Red)
+insert n (My_RBLeaf color) = My_RBNode Red n (My_RBLeaf Black) (My_RBLeaf Black)
 
 rootToBlack :: My_RBTree -> My_RBTree
-rootToBlack (My_RBLeaf _) = My_RBLeaf Black
-rootToBlack (My_RBNode color num c1 c2) = My_RBNode Black num c1 c2
+rootToBlack (My_RBNode Red num (My_RBLeaf Black) (My_RBNode Red c1 c2) = My_RBNode Black num (My_RBLeaf Red) (My_RBNode Red c1 c2)
+rootToBlack (My_RBNode Red num (My_RBNode Red c1 c2) (My_RBLeaf Black) = My_RBNode Black num (My_RBNode Red c1 c2) (My_RBLeaf Red) 
 
 colourFlip :: My_RBTree -> My_RBTree
-colourFlip (My_RBLeaf Black) = My_RBLeaf Red
-colourFlip (My_RBLeaf Red) = My_RBLeaf Black
-colourFlip (My_RBNode Black num c1 c2) = My_RBNode Red num (colourFlip c1) (colourFlip c2)
-colourFlip (My_RBNode Red num c1 c2) = My_RBNode Black num (colourFlip c1) (colourFlip c2)
+-- colourFlip case 1
+colourFlip (My_RBNode Black n1 
+		(My_RBNode Red n2 
+			(My_RBNode Red n3 c1 c2)
+			(c3)
+		)
+		(My_RBNode Red n4 
+			(c4)
+			(c5)
+		)
+	) = (My_RBNode Red n1
+		(My_RBNode Black n2
+			(My_RBNode Red n3 c1 c2)
+			(c3)
+		)
+		(My_RBNode Black n4
+			(c4)
+			(c5)
+		)
+	)
+-- colourFlip case 2
+colourFlip (My_RBNode Black n1 
+		(My_RBNode Red n2 
+			(c1)
+			(My_RBNode Red n3 c2 c3)
+		)
+		(My_RBNode Red n4 
+			(c4)
+			(c5)
+		)
+	) = (My_RBNode Red n1
+		(My_RBNode Black n2
+			(c1)
+			(My_RBNode Red n3 c2 c3)
+		)
+		(My_RBNode Black n4
+			(c4)
+			(c5)
+		)
+	)
+-- colourFlip case 3
+colourFlip (My_RBNode Black n1 
+		(My_RBNode Red n2 
+			(c1)
+			(c2)
+		)
+		(My_RBNode Red n3 
+			(My_RBNode Red n4 c3 c4)
+			(c5)
+		)
+	) = (My_RBNode Red n1
+		(My_RBNode Black n2
+			(c1)
+			(c2)
+		)
+		(My_RBNode Black n3
+			(My_RBNode Red n4 c3 c4)
+			(c5)
+		)
+	)
+-- colourFlip case 3
+colourFlip (My_RBNode Black n1 
+		(My_RBNode Red n2 
+			(c1)
+			(c2)
+		)
+		(My_RBNode Red n3 
+			(c4)
+			(My_RBNode Red n4 c3 c5)
+		)
+	) = (My_RBNode Red n1
+		(My_RBNode Black n2
+			(c1)
+			(c2)
+		)
+		(My_RBNode Black n3
+			(c4)
+			(My_RBNode Red n4 c3 c5)
+		)
+	)
+
+rebalance :: My_RBTree -> My_RBTree
+-- rebalance case 1
+rebalance (My_RBNode Black n1 	--B
+		(My_RBNode Red n2 				--R1
+			(My_RBNode Red n3		 	--R2
+				(My_RBLeaf _)
+				(My_RBLeaf _)
+			)
+			(My_RBLeaf _)
+		)
+		(My_RBLeaf _)
+	) = (My_RBNode Black n2 	--R1
+		(My_RBNode Red n3  		--R2
+			(My_RBLeaf Black)
+			(My_RBLeaf Black)
+		)
+		(My_RBNode Red n1		--B
+			(My_RBLeaf Black)
+			(My_RBLeaf Black)
+		)
+	)
+-- rebalance case 2
+rebalance (My_RBNode Black n1 	--B
+		(My_RBNode Red n2 				--R1
+			(My_RBLeaf _)
+			(My_RBNode Red n3		 	--R2
+				(My_RBLeaf _)
+				(My_RBLeaf _)
+			)
+		)
+		(My_RBLeaf _)
+	) = (My_RBNode Black n3 	--R2
+		(My_RBNode Red n2  		--R1
+			(My_RBLeaf Black)
+			(My_RBLeaf Black)
+		)
+		(My_RBNode Red n1 		--B
+			(My_RBLeaf Black)
+			(My_RBLeaf Black)
+		)
+	)
+-- rebalance case 3
+rebalance (My_RBNode Black n1 	--B
+		(My_RBLeaf _)
+		(My_RBNode Red n2 				--R1
+			(My_RBNode Red n3		 	--R2
+				(My_RBLeaf _)
+				(My_RBLeaf _)
+			)
+			(My_RBLeaf _)
+		)
+	) = (My_RBNode Black n3 	--R2
+		(My_RBNode Red n1  		--B
+			(My_RBLeaf Black)
+			(My_RBLeaf Black)
+		)
+		(My_RBNode Red n2 		--R1
+			(My_RBLeaf Black)
+			(My_RBLeaf Black)
+		)
+	)
+-- rebalance case 4
+rebalance (My_RBNode Black n1 	--B
+		(My_RBLeaf _)
+		(My_RBNode Red n2 				--R1
+			(My_RBLeaf _)
+			(My_RBNode Red n3		 	--R2
+				(My_RBLeaf _)
+				(My_RBLeaf _)
+			)
+			
+		)
+	) = (My_RBNode Black n2 	--R1
+		(My_RBNode Red n1  		--B
+			(My_RBLeaf Black)
+			(My_RBLeaf Black)
+		)
+		(My_RBNode Red n3 		--R2
+			(My_RBLeaf Black)
+			(My_RBLeaf Black)
+		)
+	)
+
 
 -- examples for op3
 baseTree2 = My_RBNode Black 1  	--N
