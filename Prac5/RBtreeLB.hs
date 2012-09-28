@@ -36,10 +36,10 @@ C
 colourFlip :: My_RBTree -> My_RBTree
 
 --C zit aan node A child 1
-colourFlip (My_RBNode Black n (My_RBNode Red a (My_RBNode Red c chc1 chc2) cha2) (My_RBNode Red b chb1 chb2)) = My_RBNode Red n (My_RBNode Black a (My_RBNode Red c chc1 chc2) cha2) (My_RBNode Black b chb1 chb2))
+colourFlip (My_RBNode Black n (My_RBNode Red a (My_RBNode Red c chc1 chc2) cha2) (My_RBNode Red b chb1 chb2)) = My_RBNode Red n (My_RBNode Black a (My_RBNode Red c chc1 chc2) cha2) (My_RBNode Black b chb1 chb2)
 
 --C zit aan node A child 2
-colourFlip (My_RBNode Black n (My_RBNode Red a cha1 (My_RBNode Red c chc1 chc2)) (My_RBNode Red b chb1 chb2)) = My_RBNode Red n (My_RBNode Black a cha1 (My_RBNode Red c chc1 chc2)) (My_RBNode Black b chb1 chb2))
+colourFlip (My_RBNode Black n (My_RBNode Red a cha1 (My_RBNode Red c chc1 chc2)) (My_RBNode Red b chb1 chb2)) = My_RBNode Red n (My_RBNode Black a cha1 (My_RBNode Red c chc1 chc2)) (My_RBNode Black b chb1 chb2)
 
 --C zit aan node B child 1
 colourFlip (My_RBNode Black n (My_RBNode Red a cha1 cha2) (My_RBNode Red b (My_RBNode Red c chc1 chc2) chb2)) = (My_RBNode Red n (My_RBNode Black a cha1 cha2) (My_RBNode Black b (My_RBNode Red c chc1 chc2) chb2))
@@ -62,72 +62,72 @@ C
 rebalance :: My_RBTree -> My_RBTree
 
 --C zit aan node A child 1
-rebalance My_RBNode Black n (
+rebalance (My_RBNode Black n 
                 (My_RBNode Red a
                     (My_RBNode Red c (My_RBLeaf _) (My_RBLeaf _))
                     (My_RBLeaf _))
                 (My_RBLeaf _)) = 
-                    My_RBNode Black n (
-                        My_RBNode Red a (
+                    My_RBNode Black n 
+                        (My_RBNode Red a
                             (My_RBLeaf Black)
                             (My_RBLeaf Black) )
-                        My_RBNode Red c (
+                        (My_RBNode Red c 
                             (My_RBLeaf Black)
                             (My_RBLeaf Black) )
 
 --C zit aan node A child 2
-rebalance My_RBNode Black n (
+rebalance (My_RBNode Black n 
                 (My_RBNode Red a
-                    (My_RBLeaf _))
-                    (My_RBNode Red c (My_RBLeaf _) (My_RBLeaf _))
+                    (My_RBLeaf _)
+                    (My_RBNode Red c (My_RBLeaf _) (My_RBLeaf _)))
                 (My_RBLeaf _)) = 
-                    My_RBNode Black n (
-                        My_RBNode Red a (
+                    My_RBNode Black n 
+						(My_RBNode Red a 
                             (My_RBLeaf Black)
                             (My_RBLeaf Black) )
-                        My_RBNode Red c (
+                        (My_RBNode Red c 
                             (My_RBLeaf Black)
                             (My_RBLeaf Black) )
 
 --C zit aan node B child 1
-rebalance My_RBNode Black n (
-                (My_RBLeaf _))
+rebalance (My_RBNode Black n 
+                (My_RBLeaf _)
                 (My_RBNode Red a
                     (My_RBNode Red c (My_RBLeaf _) (My_RBLeaf _))
-                    (My_RBLeaf _)) = 
-                        My_RBNode Black n (
-                            My_RBNode Red c (
+                    (My_RBLeaf _))) = 
+                        My_RBNode Black n 
+                            (My_RBNode Red c 
                                 (My_RBLeaf Black)
                                 (My_RBLeaf Black) )
-                            My_RBNode Red a (
+                            (My_RBNode Red a 
                                 (My_RBLeaf Black)
                                 (My_RBLeaf Black) )
 
 --C zit aan node B child 2
-rebalance  My_RBNode Black n (
-                (My_RBLeaf _))
+rebalance (My_RBNode Black n 
+                (My_RBLeaf _)
                 (My_RBNode Red a
-                    (My_RBLeaf _))  
-                    (My_RBNode Red c (My_RBLeaf _) (My_RBLeaf _)) =
-                        My_RBNode Black n (
-                            My_RBNode Red c (
+                    (My_RBLeaf _)  
+                    (My_RBNode Red c (My_RBLeaf _) (My_RBLeaf _)))) =
+                        My_RBNode Black n 
+                            (My_RBNode Red c 
                                 (My_RBLeaf Black)
                                 (My_RBLeaf Black) )
-                            My_RBNode Red a (
+                            (My_RBNode Red a 
                                 (My_RBLeaf Black)
                                 (My_RBLeaf Black) )
 rebalance tree = tree
 
 recRebalance :: My_RBTree -> My_RBTree
 recRebalance (My_RBNode c a ch1 ch2) = rebalance (My_RBNode c a (recRebalance ch1) (recRebalance ch2))
-flipTree (My_Leaf c) = (My_Leaf c)
+recRebalance (My_RBLeaf c) = (My_RBLeaf c)
 
 flipTree :: My_RBTree -> My_RBTree
 flipTree (My_RBNode c a ch1 ch2) = colourFlip (My_RBNode c a (colourFlip ch1) (colourFlip ch2))
-flipTree (My_Leaf c) = (My_Leaf c)
+flipTree (My_RBLeaf c) = (My_RBLeaf c)
 
 balancedInsert :: Number -> My_RBTree -> My_RBTree
-balancedInsert n tree = reqRebalance $ rootToBlack $ flipTree $ insert n tree
+balancedInsert n tree = recRebalance $ rootToBlack $ flipTree $ insert n tree
 		
 
 {-	
