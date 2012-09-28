@@ -141,4 +141,10 @@ removeLeftmostNode (My_RBNode Red n1 (My_RBLeaf Black) (My_RBLeaf Black) = My_RB
 removeLeftmostNode (My_RBNode Black n1 (My_RBLeaf Red) (My_RBLeaf Red) = My_RBLeaf Grey
 removeLeftmostNode (My_RBNode Red n1 (My_RBLeaf Black) (My_RBNode Black n2 c1 c2) = (My_RBNode Red n2 c1 c2)
 removeLeftmostNode (My_RBNode Black n1 (My_RBLeaf Red) (My_RBNode Red n2 c1 c2) = (My_RBNode Black n2 c1 c2)
+
+			B							R1
+		  /							  /     \
+		R1		-> 		  R2		  B
+	  /
+	 R2
 -}
