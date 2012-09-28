@@ -17,14 +17,14 @@ greyColourFlip :: My_RBTree ->  My_RBTree
 greyColourFlip (My_RBNode Black p 
 		(My_RBLeaf Grey)
 		(My_RBNode Black s
-			(My_RBLeaf Black)
-			(My_RBLeaf Black)
+			l
+			r
 		)
 	) = (My_RBNode Grey p
 		(My_RBLeaf Black)
 		(My_RBNode Red s
-			(My_RBLeaf Black)
-			(My_RBLeaf Black)
+			l
+			r
 		)
 	)
 -- (b) l is red
@@ -32,18 +32,18 @@ greyColourFlip (My_RBNode c1 p
 		(My_RBLeaf Grey)
 		(My_RBNode Black s
 			(My_RBNode Red l 
-				(My_RBLeaf Black)
-				(My_RBLeaf Black)
+				a
+				b
 			)
 			r
 		)
 	) = (My_RBNode c1 l 
 		(My_RBNode Black p
 			(My_RBLeaf Black)
-			(My_RBLeaf Black)
+			a
 		)
 		(My_RBNode Black s
-				(My_RBLeaf Black)
+				b
 				r
 		)
 	)
@@ -51,13 +51,13 @@ greyColourFlip (My_RBNode c1 p
 greyColourFlip (My_RBNode Red p 
 		(My_RBLeaf Grey)
 		(My_RBNode Black s
-			(My_RBLeaf Black)
+			l
 			r
 		)
 	) = (My_RBNode Black s
 		(My_RBNode Red p
 			(My_RBLeaf Black)
-			(My_RBLeaf Black)
+			l
 		)
 		r
 	)
@@ -65,13 +65,13 @@ greyColourFlip (My_RBNode Red p
 greyColourFlip (My_RBNode Black p 
 		(My_RBLeaf Grey)
 		(My_RBNode Black s
-			(My_RBLeaf Black)
+			l
 			(My_RBLeaf Red)
 		)
 	) = (My_RBNode Black s
 		(My_RBNode Black p
 			(My_RBLeaf Black)
-			(My_RBLeaf Black)
+			l
 		)
 		(My_RBLeaf Black)
 	)
@@ -79,13 +79,13 @@ greyColourFlip (My_RBNode Black p
 greyColourFlip (My_RBNode Black p 
 		(My_RBLeaf Grey)
 		(My_RBNode Red s
-			(My_RBLeaf Black)
-			(My_RBLeaf Black)
+			l
+			r
 		)
 	) = (My_RBNode Black s
 		(My_RBNode Red p
 			(My_RBLeaf Grey)
-			(My_RBLeaf Black)
+			l
 		)
-		(My_RBLeaf Black)
+		r
 	)
