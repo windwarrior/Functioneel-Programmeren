@@ -67,11 +67,11 @@ rebalance (My_RBNode Black n
                     (My_RBNode Red c (My_RBLeaf _) (My_RBLeaf _))
                     (My_RBLeaf _))
                 (My_RBLeaf _)) = 
-                    My_RBNode Black n 
-                        (My_RBNode Red a
+                    My_RBNode Black a 
+                        (My_RBNode Red c
                             (My_RBLeaf Black)
                             (My_RBLeaf Black) )
-                        (My_RBNode Red c 
+                        (My_RBNode Red n 
                             (My_RBLeaf Black)
                             (My_RBLeaf Black) )
 
@@ -81,11 +81,11 @@ rebalance (My_RBNode Black n
                     (My_RBLeaf _)
                     (My_RBNode Red c (My_RBLeaf _) (My_RBLeaf _)))
                 (My_RBLeaf _)) = 
-                    My_RBNode Black n 
+                    My_RBNode Black c 
 						(My_RBNode Red a 
                             (My_RBLeaf Black)
                             (My_RBLeaf Black) )
-                        (My_RBNode Red c 
+                        (My_RBNode Red n 
                             (My_RBLeaf Black)
                             (My_RBLeaf Black) )
 
@@ -95,8 +95,8 @@ rebalance (My_RBNode Black n
                 (My_RBNode Red a
                     (My_RBNode Red c (My_RBLeaf _) (My_RBLeaf _))
                     (My_RBLeaf _))) = 
-                        My_RBNode Black n 
-                            (My_RBNode Red c 
+                        My_RBNode Black c 
+                            (My_RBNode Red n 
                                 (My_RBLeaf Black)
                                 (My_RBLeaf Black) )
                             (My_RBNode Red a 
@@ -109,11 +109,11 @@ rebalance (My_RBNode Black n
                 (My_RBNode Red a
                     (My_RBLeaf _)  
                     (My_RBNode Red c (My_RBLeaf _) (My_RBLeaf _)))) =
-                        My_RBNode Black n 
-                            (My_RBNode Red c 
+                        My_RBNode Black a
+                            (My_RBNode Red n 
                                 (My_RBLeaf Black)
                                 (My_RBLeaf Black) )
-                            (My_RBNode Red a 
+                            (My_RBNode Red c 
                                 (My_RBLeaf Black)
                                 (My_RBLeaf Black) )
 rebalance tree = tree
