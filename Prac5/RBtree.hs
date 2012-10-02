@@ -1,6 +1,7 @@
 
 module RBtree where
 import FPPrac
+import Prelude (Bool)
 
 data My_Color = Red | Black | Grey
 	deriving (Show)
@@ -200,11 +201,318 @@ baseTree = My_RBNode Red 1 (My_RBLeaf Red) (My_RBLeaf Red)
 blackBaseTree = rootToBlack baseTree
 
 --- examples for op1
-myTree = My_RBNode Black 12 
-	(My_RBLeaf Red)
-	(My_RBNode Red 22 
-		(My_RBLeaf Black)
-		(My_RBLeaf Black)
+myTree = My_RBNode Red 22 
+	(My_RBNode Black 12 
+		(My_RBNode Red 6 
+			(My_RBNode Black 4
+				(My_RBNode Red 3 
+					(My_RBLeaf Black)
+					(My_RBLeaf Black)
+				)
+				(My_RBNode Red 5 
+					(My_RBLeaf Black)
+					(My_RBLeaf Black)
+				)
+			)
+			(My_RBNode Black 8
+				(My_RBNode Red 7 
+					(My_RBLeaf Black)
+					(My_RBLeaf Black)
+				)
+				(My_RBNode Red 9 
+					(My_RBLeaf Black)
+					(My_RBLeaf Black)
+				)
+			)
+		)
+		(My_RBNode Red 17
+			(My_RBNode Black 14 
+				(My_RBNode Red 13 
+					(My_RBLeaf Black)
+					(My_RBLeaf Black)
+				)
+				(My_RBNode Red 15 
+					(My_RBLeaf Black)
+					(My_RBLeaf Black)
+				)
+			)
+			(My_RBNode Black 19 
+				(My_RBNode Red 18 
+					(My_RBLeaf Black)
+					(My_RBLeaf Black)
+				)
+				(My_RBNode Red 20 
+					(My_RBLeaf Black)
+					(My_RBLeaf Black)
+				)
+
+			)
+		)
+	)
+	(My_RBNode Black 32 
+		(My_RBNode Red 27 
+			(My_RBNode Black 25
+				(My_RBNode Red 24 
+					(My_RBLeaf Black)
+					(My_RBLeaf Black)
+				)
+				(My_RBNode Red 26 
+					(My_RBLeaf Black)
+					(My_RBLeaf Black)
+				)
+			)
+			(My_RBNode Black 29
+				(My_RBNode Red 28 
+					(My_RBLeaf Black)
+					(My_RBLeaf Black)
+				)
+				(My_RBNode Red 30 
+					(My_RBLeaf Black)
+					(My_RBLeaf Black)
+				)
+			)
+		)
+		(My_RBNode Red 37
+			(My_RBNode Black 36 
+				(My_RBLeaf Red)
+				(My_RBLeaf Red)
+			)
+			(My_RBNode Black 39 
+				(My_RBLeaf Red)
+				(My_RBLeaf Red)
+			)
+		)
 	)
 	
+	
 myInsertTree = insert 13 myTree
+
+--DELETE
+
+leftmostValue :: My_RBTree -> Number
+leftmostValue (My_RBNode _ number (My_RBLeaf _) _) = number
+leftmostValue (My_RBNode _ _ (My_RBNode c n child1 child2) _) = leftmostValue (My_RBNode c n child1 child2)
+
+removeLeftmostNode ::  My_RBTree ->  My_RBTree
+removeLeftmostNode (My_RBNode c1 n1 (My_RBNode c2 n2 ch1 ch2) ch3) = (My_RBNode c1 n1 (removeLeftmostNode (My_RBNode c2 n2 ch1 ch2)) ch3)
+removeLeftmostNode (My_RBNode Red n1 (My_RBLeaf _) (My_RBLeaf _)) = My_RBLeaf Red
+removeLeftmostNode (My_RBNode Black n1 (My_RBLeaf _) (My_RBLeaf _)) = My_RBLeaf Grey
+removeLeftmostNode (My_RBNode Red n1 (My_RBLeaf _) (My_RBNode _ n2 c1 c2)) = (My_RBNode Red n2 (My_RBLeaf Black) (My_RBLeaf Black))
+removeLeftmostNode (My_RBNode Black n1 (My_RBLeaf _) (My_RBNode _ n2 c1 c2)) = (My_RBNode Black n2 (My_RBLeaf Red) (My_RBLeaf Red))
+
+(===) :: My_Color -> My_Color -> Bool
+Grey === Grey = True
+Red === Red = True
+Black === Black = True
+_ === _ = False
+
+
+isGrey :: My_RBTree -> Bool
+isGrey (My_RBLeaf c) = c === Grey
+isGrey (My_RBNode c _ _ _) = c === Grey
+
+isBlack :: My_RBTree -> Bool
+isBlack (My_RBLeaf c) = c===Black
+isBlack (My_RBNode c _ _ _) = c===Black
+
+isRed :: My_RBTree -> Bool
+isRed (My_RBLeaf c) = c===Red
+isRed (My_RBNode c _ _ _) = c===Red
+
+color :: My_Color -> My_RBTree -> My_RBTree
+color c (My_RBLeaf _) = My_RBLeaf c
+color c (My_RBNode _ n c1 c2) = My_RBNode c n c1 c2
+
+isNode :: My_RBTree -> Bool
+isNode (My_RBNode _ _ _ _) = True
+isNode (My_RBLeaf _ ) = False
+
+greyColourFlip :: My_RBTree ->  My_RBTree
+-- (a) all black
+greyColourFlip (My_RBNode Black p 
+		g
+		(My_RBNode Black s
+			l
+			r
+		)
+	) 
+	| (isGrey g) && (isBlack l) && (isBlack r) 
+	= (My_RBNode Grey p
+			(color Black g)
+			(My_RBNode Red s
+				l
+				r
+			)
+		)
+-- (b) l is red
+greyColourFlip (My_RBNode c1 p 
+		g
+		(My_RBNode Black s
+			(My_RBNode Red l 
+				a
+				b
+			)
+			r
+		)
+	)
+	| (isGrey g) && (isBlack a) && (isBlack b) 	
+	= (My_RBNode c1 l 
+			(My_RBNode Black p
+				(color Black g)
+				a
+			)
+			(My_RBNode Black s
+					b
+					r
+			)
+		)
+-- (c) p is red
+greyColourFlip (My_RBNode Red p 
+		g
+		(My_RBNode Black s
+			l
+			r
+		)
+	) 
+	| (isGrey g) && (isBlack l)
+	= (My_RBNode Black s
+			(My_RBNode Red p
+				(color Black g)
+				l
+			)
+			r
+		)
+-- (d) r is red
+greyColourFlip (My_RBNode Black p 
+		g
+		(My_RBNode Black s
+			l
+			r
+		)
+	)
+	| (isGrey g)  && (isBlack l) && (isRed r)
+	= (My_RBNode Black s
+			(My_RBNode Black p
+				(color Black g)
+				l
+			)
+			(color Black r)
+		)
+-- (e) s is red
+greyColourFlip (My_RBNode Black p 
+		g
+		(My_RBNode Red s
+			l
+			r
+		)
+	)
+	| (isGrey g)  && (isBlack l) && (isBlack r)
+	= (My_RBNode Black s
+		(My_RBNode Red p
+			g
+			l
+		)
+		r
+	)
+-- mirrored
+-- (a) all black
+greyColourFlip (My_RBNode Black p 
+		(My_RBNode Black s
+			r
+			l
+		)
+		g
+	) 
+	| (isGrey g) && (isBlack l) && (isBlack r) 
+	= (My_RBNode Grey p
+			(My_RBNode Red s
+				r
+				l
+			)
+			(color Black g)
+		)
+-- (b) l is red
+greyColourFlip (My_RBNode c1 p 
+		(My_RBNode Black s
+			r
+			(My_RBNode Red l 
+				b
+				a
+			)
+		)
+		g
+	)
+	| (isGrey g) && (isBlack a) && (isBlack b) 	
+	= (My_RBNode c1 l 
+			(My_RBNode Black s
+					r
+					b
+			)
+			(My_RBNode Black p
+				a
+				(color Black g)
+			)
+		)
+-- (c) p is red
+greyColourFlip (My_RBNode Red p 
+		(My_RBNode Black s
+			r
+			l
+		)
+		g
+	) 
+	| (isGrey g) && (isBlack l)
+	= (My_RBNode Black s
+			r
+			(My_RBNode Red p
+				l
+				(color Black g)
+			)
+		)
+-- (d) r is red
+greyColourFlip (My_RBNode Black p 
+		(My_RBNode Black s
+			r
+			l
+		)
+		g
+	)
+	| (isGrey g)  && (isBlack l) && (isRed r)
+	= (My_RBNode Black s
+			(color Black r)
+			(My_RBNode Black p
+				l
+				(color Black g)
+			)
+		)
+-- (e) s is red
+greyColourFlip (My_RBNode Black p
+		(My_RBNode Red s
+			r
+			l
+		) 
+		g
+	)
+	| (isGrey g)  && (isBlack l) && (isBlack r)
+	= (My_RBNode Black s
+		r
+		(My_RBNode Red p
+			l
+			g
+		)
+	)
+greyColourFlip other = other
+	
+
+greyRebalance :: My_RBTree -> My_RBTree
+greyRebalance (My_RBLeaf c) = My_RBLeaf c
+greyRebalance (My_RBNode c n c1 c2) = greyColourFlip (My_RBNode c n (greyRebalance c1) (greyRebalance c2))
+
+delete :: Number -> My_RBTree -> My_RBTree
+delete n (My_RBNode c num c1 c2)
+	| (n == num) && (isNode c2) = My_RBNode c newValue c1 (removeLeftmostNode c2)--verwijderen 
+	| (n == num) && not(isNode c2) = c1--verwijderen 
+	| n < num = My_RBNode c num (delete n c1) c2 --zoek links
+	| otherwise = My_RBNode c num c1 (delete n c2) --zoek rechts
+	where newValue = leftmostValue c2
+
