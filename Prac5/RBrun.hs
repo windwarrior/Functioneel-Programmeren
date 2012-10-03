@@ -17,6 +17,7 @@ data StateTp = StateTp { mode :: Bool
                        , rbts :: [RbTreeG]
                        }
 
+
 initstate = StateTp { mode = False
                     , rbts = [ (pp (greyRebalance (delete 32 myTree))), (pp (myTree))]
                     }
