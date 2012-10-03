@@ -18,7 +18,7 @@ data StateTp = StateTp { mode :: Bool
                        }
 
 initstate = StateTp { mode = False
-                    , rbts = [ (pp (insert 5 myTree)), (pp myTree) ]
+                    , rbts = [ (pp myTree), (pp (insert 5 myTree)), pp $ colourFlip $ insert 5 myTree, pp $ myTree2, pp myTree3 ]
                     }
 
 main = installEventHandler "RBrun" doE initstate (drawTrees m 200 ts) 25
