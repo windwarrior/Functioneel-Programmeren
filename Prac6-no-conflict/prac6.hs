@@ -32,10 +32,25 @@ doPrac6 :: MyStore -> Input -> (MyStore,[Output])
 
 doPrac6 myStore (KeyIn 'e') = (myStore', [])
     where
-        myStore' = trace "hey" myStore
+        myStore' = myStore{isEpressed = True}
         
+doPrac6 myStore (MouseUp (x,y)) | n == Nothing = (myStore, [])
+								| otherwise = (myStore', o)
+	where
+		myStore' = myStore{myGraph= (redColorNode graph i), isEpressed = False}
+		MyStore{myGraph = graph} = myStore
+		o = []
+		n = onNode (x,y)
+		Just i = n
 doPrac6 myStore i = (myStore,[])
 
+redColorNode :: Graph -> (Char,Color,Point) -> (Char,Color,Point)
+redColorNode (x:nodeList) node 
+	| curNode == node =
+	| 
+	where
+		nodeList = Graph{nodes = nodes}
+		curNode = take nodeList
 
 testTrace :: String -> Bool
 testTrace s = trace s True

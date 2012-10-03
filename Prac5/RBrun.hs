@@ -8,7 +8,7 @@ import FPPrac.Events
 import FPPrac.Graphics
 import RBgraphics
 import Prelude
-import RBtree
+import RBtreeLB
 
 -- ============= types ========================================================
 -- RBnode c v ts:   c=colour, v=value, ts=subtrees
@@ -18,7 +18,7 @@ data StateTp = StateTp { mode :: Bool
                        }
 
 initstate = StateTp { mode = False
-                    , rbts = [ (pp (greyRebalance (delete 37 myTree))), (pp (myTree))]
+                    , rbts = [ (pp (repair myTree2)), (pp (myTree2))]
                     }
 
 main = installEventHandler "RBrun" doE initstate (drawTrees m 200 ts) 25
@@ -71,7 +71,7 @@ exampleTree = RBnode black "9t"
 pp :: My_RBTree -> RbTreeG
 pp (My_RBNode Black n ch1 ch2) = RBnode black (show n) [(pp ch1), (pp ch2)]
 pp (My_RBNode Red n ch1 ch2) = RBnode red (show n) [(pp ch1), (pp ch2)]
-pp (My_RBNode Grey n ch1 ch2) = RBnode (dark white) (show n) [(pp ch1), (pp ch2)]
+--pp (My_RBNode Grey n ch1 ch2) = RBnode (dark white) (show n) [(pp ch1), (pp ch2)]
 pp (My_RBLeaf Black) = RBnode black "" []
 pp (My_RBLeaf Red) = RBnode red "" []
-pp (My_RBLeaf Grey) = RBnode (dark white) "" []
+--pp (My_RBLeaf Grey) = RBnode (dark white) "" []
