@@ -13,6 +13,7 @@ import Debug.Trace
 data MyStore = MyStore
   { 
     myGraph :: Graph,
+	isBpressed :: Bool,
     isEpressed :: Bool
   }
 
@@ -33,18 +34,35 @@ doPrac6 :: MyStore -> Input -> (MyStore,[Output])
 doPrac6 myStore (KeyIn 'e') = (myStore', [])
     where
         myStore' = myStore{isEpressed = True}
+
+doPrac6 myStore (KeyIn 'b') = (myStore', [])
+    where
+        myStore' = myStore{isBpressed = True}
         
-doPrac6 myStore@MyStore{myGraph = graph} (MouseUp (x,y)) | n == Nothing = (myStore, [])
-								| otherwise = (myStore', o)
+doPrac6 myStore@MyStore{myGraph = graph, isEpressed = True} (MouseDown (x,y))
+	| n == Nothing = (myStore{isEpressed = False}, [])
+	| otherwise = (myStore', o)
 	where
-		myStore' = myStore{myGraph= (redColorNode graph i), isEpressed = False}
-		o = []
-		n = onNode (x,y)
+		graph' = (redColorNode graph i)
+		myStore' = myStore{myGraph=graph' , isEpressed = False}
+		o = [DrawPicture $ drawGraph graph']
+		n = onNode (nodes graph) (x,y)
 		Just i = n
+
+doPrac6 myStore@MyStore{myGraph = graph, isBpressed = True} (MouseDown (x,y))
+	| n == Nothing = (myStore{isEpressed = False}, [])
+	| otherwise = (myStore', o)
+	where
+		graph' = (makeNeighboursBlue graph i)
+		myStore' = myStore{myGraph=graph' , isEpressed = False}
+		o = [DrawPicture $ drawGraph graph']
+		n = onNode (nodes graph) (x,y)
+		Just i = n
+		
 doPrac6 myStore i = (myStore,[])
 
 redColorNode :: Graph -> (Char,Color,Point) -> Graph
-redColorNode myGraph@Graph{nodes = nodes} nod = myGraph{nodes = (redColorNodeList myGraph{nodes} nod)}
+redColorNode myGraph@Graph{nodes = nodes} nod = myGraph{nodes = (redColorNodeList nodes nod)}
 
 redColorNodeList :: [(Char,Color,Point)] -> (Char,Color,Point) -> [(Char,Color,Point)]
 redColorNodeList (x:xs) (ch, co, po) 
