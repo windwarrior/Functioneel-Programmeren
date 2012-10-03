@@ -15,8 +15,8 @@ insert n (My_RBNode color num child1 child2)
 insert n (My_RBLeaf color) = My_RBNode Red n (My_RBLeaf Black) (My_RBLeaf Black)
 
 rootToBlack :: My_RBTree -> My_RBTree
-rootToBlack (My_RBNode Red n1 (My_RBLeaf Black) (My_RBNode Red n2 c1 c2)) = My_RBNode Black n1 (My_RBLeaf Red) (My_RBNode Red n2 c1 c2)
-rootToBlack (My_RBNode Red n1 (My_RBNode Red n2 c1 c2) (My_RBLeaf Black)) = My_RBNode Black n1 (My_RBNode Red n2 c1 c2) (My_RBLeaf Red) 
+rootToBlack (My_RBNode Red n1 (My_RBLeaf Black) (My_RBNode Red n2 c1 c2)) = My_RBNode Black n1 (My_RBLeaf Black) (My_RBNode Black n2 c1 c2)
+rootToBlack (My_RBNode Red n1 (My_RBNode Red n2 c1 c2) (My_RBLeaf Black)) = My_RBNode Black n1 (My_RBNode Red n2 c1 c2) (My_RBLeaf Black) 
 
 colourFlip :: My_RBTree -> My_RBTree
 -- colourFlip case 1
@@ -186,9 +186,9 @@ rebalance (My_RBNode Black n1 	--B
 
 -- examples for op3
 baseTree2 = My_RBNode Black 1  	--N
-	(My_RBLeaf Red) 						--A
+	(My_RBLeaf Black) 					--A
 	(My_RBNode Red 1 					--B
-		(My_RBLeaf Red) 				
+		(My_RBLeaf Black) 				
 		(My_RBNode Red 1 				--C
 			(My_RBLeaf Black) 
 			(My_RBLeaf Black)
@@ -197,7 +197,7 @@ baseTree2 = My_RBNode Black 1  	--N
 flippedBaseTree2 = colourFlip baseTree2
 	
 -- examples for op2
-baseTree = My_RBNode Red 1 (My_RBLeaf Red) (My_RBLeaf Red)
+baseTree = My_RBNode Red 1 (My_RBLeaf Black) (My_RBLeaf Black)
 blackBaseTree = rootToBlack baseTree
 
 --- examples for op1
@@ -274,12 +274,12 @@ myTree = My_RBNode Red 22
 		)
 		(My_RBNode Red 37
 			(My_RBNode Black 36 
-				(My_RBLeaf Red)
-				(My_RBLeaf Red)
+				(My_RBLeaf Black)
+				(My_RBLeaf Black)
 			)
 			(My_RBNode Black 39 
-				(My_RBLeaf Red)
-				(My_RBLeaf Red)
+				(My_RBLeaf Black)
+				(My_RBLeaf Black)
 			)
 		)
 	)
@@ -295,10 +295,10 @@ leftmostValue (My_RBNode _ _ (My_RBNode c n child1 child2) _) = leftmostValue (M
 
 removeLeftmostNode ::  My_RBTree ->  My_RBTree
 removeLeftmostNode (My_RBNode c1 n1 (My_RBNode c2 n2 ch1 ch2) ch3) = (My_RBNode c1 n1 (removeLeftmostNode (My_RBNode c2 n2 ch1 ch2)) ch3)
-removeLeftmostNode (My_RBNode Red n1 (My_RBLeaf _) (My_RBLeaf _)) = My_RBLeaf Red
+removeLeftmostNode (My_RBNode Red n1 (My_RBLeaf _) (My_RBLeaf _)) = My_RBLeaf Black
 removeLeftmostNode (My_RBNode Black n1 (My_RBLeaf _) (My_RBLeaf _)) = My_RBLeaf Grey
 removeLeftmostNode (My_RBNode Red n1 (My_RBLeaf _) (My_RBNode _ n2 c1 c2)) = (My_RBNode Red n2 (My_RBLeaf Black) (My_RBLeaf Black))
-removeLeftmostNode (My_RBNode Black n1 (My_RBLeaf _) (My_RBNode _ n2 c1 c2)) = (My_RBNode Black n2 (My_RBLeaf Red) (My_RBLeaf Red))
+removeLeftmostNode (My_RBNode Black n1 (My_RBLeaf _) (My_RBNode _ n2 c1 c2)) = (My_RBNode Black n2 (My_RBLeaf Black) (My_RBLeaf Black))
 
 (===) :: My_Color -> My_Color -> Bool
 Grey === Grey = True

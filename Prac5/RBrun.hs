@@ -18,7 +18,7 @@ data StateTp = StateTp { mode :: Bool
                        }
 
 initstate = StateTp { mode = False
-                    , rbts = [ (pp (greyRebalance (delete 37 myTree))), (pp (myTree))]
+                    , rbts = [ (pp (greyRebalance (delete 32 myTree))), (pp (myTree))]
                     }
 
 main = installEventHandler "RBrun" doE initstate (drawTrees m 200 ts) 25
