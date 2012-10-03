@@ -34,23 +34,26 @@ doPrac6 myStore (KeyIn 'e') = (myStore', [])
     where
         myStore' = myStore{isEpressed = True}
         
-doPrac6 myStore (MouseUp (x,y)) | n == Nothing = (myStore, [])
+doPrac6 myStore@MyStore{myGraph = graph} (MouseUp (x,y)) | n == Nothing = (myStore, [])
 								| otherwise = (myStore', o)
 	where
 		myStore' = myStore{myGraph= (redColorNode graph i), isEpressed = False}
-		MyStore{myGraph = graph} = myStore
 		o = []
 		n = onNode (x,y)
 		Just i = n
 doPrac6 myStore i = (myStore,[])
 
-redColorNode :: Graph -> (Char,Color,Point) -> (Char,Color,Point)
-redColorNode (x:nodeList) node 
-	| curNode == node =
-	| 
-	where
-		nodeList = Graph{nodes = nodes}
-		curNode = take nodeList
+redColorNode :: Graph -> (Char,Color,Point) -> Graph
+redColorNode myGraph@Graph{nodes = nodes} nod = myGraph{nodes = (redColorNodeList myGraph{nodes} nod)}
+
+redColorNodeList :: [(Char,Color,Point)] -> (Char,Color,Point) -> [(Char,Color,Point)]
+redColorNodeList (x:xs) (ch, co, po) 
+	| equal (ch, co, po) x = (ch, red, po) : xs
+	| otherwise = x : redColorNodeList xs (ch, co, po)
+	
+	
+equal :: (Char, Color, Point) -> (Char, Color, Point) -> Bool
+equal (ch1, co1, po1) (ch2, co2, po2) = (ch1 == ch2) && (co1 == co2) && (po1 == po2)
 
 testTrace :: String -> Bool
 testTrace s = trace s True
