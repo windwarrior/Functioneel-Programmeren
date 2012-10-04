@@ -56,18 +56,32 @@ doPrac6 myStore@MyStore{myGraph = graph, isEpressed = True} (MouseDown (x,y))
 		n = onNode (nodes graph) (x,y)
 		Just i = n
 
-{-doPrac6 myStore@MyStore{myGraph = graph, isBpressed = True} (MouseDown (x,y))
-	| n == Nothing = (myStore{isEpressed = False}, [])
+doPrac6 myStore@MyStore{myGraph = graph, isBpressed = True} (MouseDown (x,y))
+	| n == Nothing = (myStore{isBpressed = False}, [])
 	| otherwise = (myStore', o)
 	where
 		graph' = (makeNeighboursBlue graph i)
-		myStore' = myStore{myGraph=graph' , isEpressed = False}
+		myStore' = myStore{myGraph=graph' , isBpressed = False}
 		o = [DrawPicture $ drawGraph graph']
 		n = onNode (nodes graph)
         Just i = n
-        -}
+       }
+{-
+makeNeighboursBlue:: Graph-> (Char, Color, Point) -> Graph
+makeNeighboursBlue myGraph@Graph{nodes = nodes, directed = directed, edges = edges} nod = myGraph{nodes = (makeNeighboursBlueList directed edges nodes nod), directed = directed, edges = edges}
 
-
+makeNeighboursBlueList :: Bool -> [Edge] -> [(Char, Color, Point)] -> (Char, Color, Point) -> [(Char, Color, Point)]
+makeNeighboursBlueList _ [] nodes _ = nodes
+makeNeighboursBlueList directed ((ch1, ch2, col, n) :xs) nodes (ch, co, po) = --Find correct edges and call colorNeighbours
+	| ch1 == ch = makeNeighboursBlueList directed xs (blueColorNodeList nodes ch1) (ch, co, po)
+	| ch2 == ch && not(directed) = makeNeighboursBlueList directed xs (blueColorNodeList nodes ch2) (ch, co, po)
+	| otherwise = makeNeighboursBlueList directed xs nodes (ch, co, po)
+	
+blueColorNodeList :: [(Char,Color,Point)] -> Char -> [(Char,Color,Point)]
+blueColorNodeList ((ch, co, po):xs) ch1
+	| ch1 == ch = (ch, blue, po) : xs
+	| otherwise = (ch, co, po) : blueColorNodeList xs ch1
+-}
 doPrac6 myStore i = (myStore,[])
 
 redColorNode :: Graph -> (Char,Color,Point) -> Graph
