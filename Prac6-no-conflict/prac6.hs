@@ -115,6 +115,12 @@ hasEdge (ch1, c1, p1) (ch2, c2, p2) ((che1, che2, _, _):xs)
 testTrace :: String -> Bool
 testTrace s = trace s True
 
+isConnected :: [(Char, Color, Point)] -> [(Char,Char,Color,Int)] -> [(Char, Color, Point)] -> Bool
+isConnected nodes edges visited = 
+    where
+        toBeVisited = 
+        
+
 drawMypracBottomLine :: Graph -> Picture
 drawMypracBottomLine graph =
   Pictures
