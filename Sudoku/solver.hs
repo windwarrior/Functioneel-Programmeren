@@ -1,3 +1,5 @@
+type Sudoku = [[Number]]
+
 pass :: Sudoku -> Sudoku
 pass sud = checkBlock $ checkColumn $ checkRow sud
 
