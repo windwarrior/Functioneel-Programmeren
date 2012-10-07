@@ -63,16 +63,16 @@ doPrac6 myStore@MyStore{myGraph = graph, isBpressed = True} (MouseDown (x,y))
 		graph' = (makeNeighboursBlue graph i)
 		myStore' = myStore{myGraph=graph' , isBpressed = False}
 		o = [DrawPicture $ drawGraph graph']
-		n = onNode (nodes graph)
-        Just i = n
-       }
-{-
+		n = onNode (nodes graph) (x,y)
+		Just i = n
+       
+
 makeNeighboursBlue:: Graph-> (Char, Color, Point) -> Graph
 makeNeighboursBlue myGraph@Graph{nodes = nodes, directed = directed, edges = edges} nod = myGraph{nodes = (makeNeighboursBlueList directed edges nodes nod), directed = directed, edges = edges}
 
 makeNeighboursBlueList :: Bool -> [Edge] -> [(Char, Color, Point)] -> (Char, Color, Point) -> [(Char, Color, Point)]
 makeNeighboursBlueList _ [] nodes _ = nodes
-makeNeighboursBlueList directed ((ch1, ch2, col, n) :xs) nodes (ch, co, po) = --Find correct edges and call colorNeighbours
+makeNeighboursBlueList directed ((ch1, ch2, col, n) :xs) nodes (ch, co, po)  --Find correct edges and call colorNeighbours
 	| ch1 == ch = makeNeighboursBlueList directed xs (blueColorNodeList nodes ch1) (ch, co, po)
 	| ch2 == ch && not(directed) = makeNeighboursBlueList directed xs (blueColorNodeList nodes ch2) (ch, co, po)
 	| otherwise = makeNeighboursBlueList directed xs nodes (ch, co, po)
@@ -81,8 +81,6 @@ blueColorNodeList :: [(Char,Color,Point)] -> Char -> [(Char,Color,Point)]
 blueColorNodeList ((ch, co, po):xs) ch1
 	| ch1 == ch = (ch, blue, po) : xs
 	| otherwise = (ch, co, po) : blueColorNodeList xs ch1
--}
-doPrac6 myStore i = (myStore,[])
 
 redColorNode :: Graph -> (Char,Color,Point) -> Graph
 redColorNode myGraph@Graph{nodes = nodes} nod = myGraph{nodes = (redColorNodeList nodes nod)}
@@ -115,11 +113,16 @@ hasEdge (ch1, c1, p1) (ch2, c2, p2) ((che1, che2, _, _):xs)
 testTrace :: String -> Bool
 testTrace s = trace s True
 
+{-
 isConnected :: [(Char, Color, Point)] -> [(Char,Char,Color,Int)] -> [(Char, Color, Point)] -> Bool
-isConnected nodes edges visited = 
-    where
-        toBeVisited = 
-        
+isConnected nodes edges visited = -}
+
+--De buren van een node zijn alle nodes waartussen 1 edge ligt met de eerste node
+-- Deze functie is hetzelfde als makeNeighboursBlue
+{-
+neighbours :: [(Char, Color, Point)] [(Char, Char, Color, Int] -> (Char, Color, Point) -> [(Char, Color, Point)]
+neighbours nodes edges (fromNode, _, _) = [(toNode, col1, cp1) | (toNode, col1, cp1) <- nodes, (edgeNode1, edgeNode2, _, _) <- edges, edgeNode1 == fromNode && edgeNode2 == toNode || edgeNode2 == fromNode && edgeNode1 == toNode] 
+        -}
 
 drawMypracBottomLine :: Graph -> Picture
 drawMypracBottomLine graph =
