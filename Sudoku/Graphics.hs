@@ -8,6 +8,9 @@ data Store = Store {
     sudoku :: Sudoku
 }
 
+main :: IO ()
+main = graphicsout $ drawSudoku
+
 sudokuSize = 400
 halfSudokuSize = 0.5 * sudokuSize
 fieldSize = sudokuSize / 9
