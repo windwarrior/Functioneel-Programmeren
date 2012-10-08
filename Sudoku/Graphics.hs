@@ -1,6 +1,7 @@
 import FPPrac
 import FPPrac.Graphics
 import Solver
+import Prelude (Float)
 main :: IO ()
 main = graphicsout $ drawSudoku
 
