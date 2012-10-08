@@ -1,4 +1,4 @@
-
+module Solver where 
 import FPPrac
 import Examples 
 
