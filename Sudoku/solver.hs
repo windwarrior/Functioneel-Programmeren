@@ -18,8 +18,11 @@ checkColumn sud = checkRow $ getColumns sud
 checkRow :: Sudoku -> Sudoku
 checkRow (x:xs) = error "unimplemented checkRow"
 
+
+getBlockRow x sud y =  (fst (splitAt 3 (snd (splitAt (3*x ) (sud !! y)))))
+
 getBlock :: Number -> Number -> Sudoku -> Block
-getBlock x y sud = error "unimplemented getBlock"
+getBlock x y sud = map (getBlockRow x sud) [(3*y),(3*y)+1, (3*y)+2]
 
 -- The idea is to use one of the prac2 functions to rotate the matrix
 getColumns :: Sudoku -> Sudoku
