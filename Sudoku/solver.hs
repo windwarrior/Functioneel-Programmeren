@@ -6,6 +6,8 @@ type Sudoku = [[Square]]
 type Square = [Number]
 type Block = [[Square]] -- Same as sudoku, different meaning
 
+-- STAAT EVEN UITGECOMMENT, WANT HET ERRORDE, DUBBELE IMPORTS
+{-
 pass :: Sudoku -> Sudoku
 pass sud = checkBlock $ checkColumn $ checkRow sud
 
@@ -28,5 +30,6 @@ getColumn x sud = map (!! x) sud
 
 getBlock :: Number -> Number -> Sudoku -> Block
 getBlock x y sud = map (getBlockRow x sud) [(3*y),(3*y)+1, (3*y)+2]
-getBlockRow x sud y =  (fst (splitAt 3 (snd (splitAt (3*x ) (sud !! y)))))
+getBlockRow x sud y =  (fst (splitAt 3 (snd (splitAt (3*x ) (sud FPPrac.!! y)))))
 
+-}
