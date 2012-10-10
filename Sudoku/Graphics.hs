@@ -102,4 +102,4 @@ doSudoku sud = installEventHandler "sudoku" processKey store startPic 10
     where 
         store = startStore sud
         startPic = drawSudoku store
-        
+   
