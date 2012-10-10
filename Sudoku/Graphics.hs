@@ -76,13 +76,16 @@ drawLine (x:xs) (col, row)
     | otherwise = (drawMultipleOption x (0, 0)) ++ (drawLine xs (col+1, row))
 
 drawMultipleOption :: Square -> (Int, Int) -> [Picture]
-drawMultipleOption (g) (x,y)
-	| (toIndex+1) `elem` g = (Translate ((0.4 * fieldSize) + (x - 1) * fieldSize) ((0.4 * fieldSize) + ((-1 + y) * fieldSize)) $ Scale 0.1 0.1 $ Text g):[] ++ (drawMultipleOption (g \\ toIndex) (xnext, ynext))
+drawMultipleOption [] _ = []
+drawMultipleOption g (x,y)
+	| ((toIndex+1) `elem` g) = (Translate ((0.05 * (fieldSize/3)) - fromIntegral (x - 1) * (fieldSize/3)) ((0.05 * (fieldSize/3)) - (fromIntegral (-1 + y) * (fieldSize/3))) 
+												$ Scale 0.1 0.1 
+													$ Text (show (toIndex + 1))):[] ++ (drawMultipleOption (trace (show (g \\ [toIndex+1])) (g \\ [toIndex+1]))(xnext, ynext))
 	| otherwise = (drawMultipleOption (g) (xnext, ynext))
 	where
 		toIndex = (y*3 + x)
 		xnext = (toIndex + 1) `mod` 3
-		ynext = floor (toIndex + 1) / 3
+		ynext = (toIndex + 1) `div` 3
 		
 -- Dit moet nog even anders, maar het 'werkt'
 row1 = [[ ],[ ],[ ],[8],[ ],[4],[9],[ ],[3]]
