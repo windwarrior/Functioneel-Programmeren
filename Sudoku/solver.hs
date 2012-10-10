@@ -1,9 +1,10 @@
 module Solver where 
 import FPPrac
-import Examples 
+import Examples
+import Prelude (Int)
 
 type Sudoku = [[Square]]
-type Square = [Number]
+type Square = [Int]
 type Block = [[Square]] -- Same as sudoku, different meaning
 
 -- STAAT EVEN UITGECOMMENT, WANT HET ERRORDE, DUBBELE IMPORTS
