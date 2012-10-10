@@ -7,20 +7,6 @@ type Sudoku = [[Square]]
 type Square = [Number]
 type Block = [[Square]] -- Same as sudoku, different meaning
 
-
-{-
-pass :: Sudoku -> Sudoku
-pass sud = checkBlock $ checkColumn $ checkRow sud
-
-checkBlock :: Sudoku -> Sudoku
-checkBlock sud = error "unimplemented checkBlock"
-
-checkColumn :: Sudoku -> Sudoku
-checkColumn sud = checkRow $ getColumns sud
-
-checkRow :: Sudoku -> Sudoku
-checkRow (x:xs) = error "unimplemented checkRow"
--}
 --GETTERS
 
 getRow :: Number -> Sudoku -> [Square]
@@ -35,6 +21,13 @@ getColumns sud = map (getColumn sud) [0..8]
 getBlock :: Number -> Number -> Sudoku -> Block
 getBlock x y sud = map (getBlockRow y sud) [(3*x),(3*x)+1, (3*x)+2]
 getBlockRow x sud y =  (fst (FPPrac.splitAt 3 (snd (FPPrac.splitAt (3*x ) (sud FPPrac.!! y)))))
+
+--setBlock :: Block -> Number -> Number -> Sudoku -> Sudoku
+setBlock block x y sud = (fst firstRows, lastRows)
+	where
+		firstRows = FPPrac.splitAt (3*x) sud
+		lastRows = FPPrac.splitAt 3 (snd firstRows)
+
 
 --Prepares sudoku for solver
 
@@ -61,6 +54,7 @@ getNumbers [] = []
 hsCheckRow :: [Square] -> [Square]
 hsCheckRow row = map (mudiff  (getNumbers row)) row
 
+hsCheck :: Sudoku -> Sudoku
 hsCheck sud = map hsCheckRow (map hsCheckRow (getColumns sud))
 
 test = hsCheckRow (head (prep exampleSudokuEasy))
