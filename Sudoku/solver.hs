@@ -25,8 +25,8 @@ getBlockRow x sud y =  (fst (splitAt 3 (snd (splitAt (3*x ) (sud !! y)))))
 --setBlock :: Block -> Number -> Number -> Sudoku -> Sudoku
 setBlock block x y sud = (fst firstRows, lastRows)
 	where
-		firstRows = FPPrac.splitAt (3*x) sud
-		lastRows = FPPrac.splitAt 3 (snd firstRows)
+		firstRows = splitAt (3*x) sud
+		lastRows = splitAt 3 (snd firstRows)
 
 
 --Prepares sudoku for solver
