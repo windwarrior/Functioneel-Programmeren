@@ -1,8 +1,10 @@
 import FPPrac
 import FPPrac.Graphics
 import FPPrac.Events
+import Prelude (Float, Int)
 import Solver
 import Debug.Trace
+import Data.List ((\\))
 
 -- De state van het programma
 data Store = Store {
@@ -27,7 +29,11 @@ startStore sud = Store {
 
 -- Functie om input te verwerken
 processKey :: Store -> Input -> (Store,[Output])
-processKey store (MouseDown (x,y)) = trace (show (hitField (x,y))) (store, [])
+processKey store (MouseDown (x,y)) | f /= Nothing = trace (show i) (store, [])
+                                   | otherwise    = (store, [])
+	where
+		f = hitField (x,y)
+		Just i = f
 -- Debug regel, print ingedrukte toets, matcht op KeyIn's only
 processKey store (KeyIn a) = trace (show a) (store, [])
 -- Catch all case
@@ -56,17 +62,28 @@ drawSudoku store@Store{sudoku = sudoku} = Pictures $
     ++ (map (Line) [[(-halfSudokuSize + x * fieldSize, halfSudokuSize), (-halfSudokuSize + x * fieldSize, -halfSudokuSize)]| x <- [0..9]]) -- these are the vertical boardlines
     ++ (map (Line) [[(halfSudokuSize, -halfSudokuSize + x * fieldSize), (-halfSudokuSize, -halfSudokuSize + x * fieldSize)]| x <- [0..9]]) -- these are the horizontal boardlines
     ++ (drawNumbers sudoku 0)
+	++ [Translate (-10) (-10) $ Scale 0.2 0.2 $ Text "A"]
   
 drawNumbers :: Sudoku -> Float -> [Picture]
 drawNumbers [] _ = []
 drawNumbers (x:xs) row = (drawLine x (0,row)) ++ (drawNumbers xs (row+1))
-
+--(Translate (-1 * halfSudokuSize + (col + 0.5) * fieldSize) (halfSudokuSize - (row + 0.5) * fieldSize) $
+--Text $ show (x FPPrac.!! 0)):[]
 drawLine :: [Square] -> (Float, Float) ->  [Picture]
 drawLine [] _ = []
 drawLine (x:xs) (col, row)
-    | FPPrac.length x == 1 = (Translate (-1 * halfSudokuSize + (col + 0.5) * fieldSize) (halfSudokuSize - (row + 0.5) * fieldSize) $ Scale 0.1 0.1 $ Text $ show (x FPPrac.!! 0)):[]  ++ (drawLine xs (col+1, row))
-    | otherwise = (drawLine xs (col+1, row))
+    | FPPrac.length x == 1 = [(Color green $ Text $ show (x !! 0)), (Color red $ rectangleSolid fieldSize fieldSize)]  ++ (drawLine xs (col+1, row))
+    | otherwise = (drawMultipleOption x (0, 0)) ++ (drawLine xs (col+1, row))
 
+drawMultipleOption :: Square -> (Int, Int) -> [Picture]
+drawMultipleOption (g) (x,y)
+	| (toIndex+1) `elem` g = (Translate ((0.4 * fieldSize) + (x - 1) * fieldSize) ((0.4 * fieldSize) + ((-1 + y) * fieldSize)) $ Scale 0.1 0.1 $ Text g):[] ++ (drawMultipleOption (g \\ toIndex) (xnext, ynext))
+	| otherwise = (drawMultipleOption (g) (xnext, ynext))
+	where
+		toIndex = (y*3 + x)
+		xnext = (toIndex + 1) `mod` 3
+		ynext = floor (toIndex + 1) / 3
+		
 -- Dit moet nog even anders, maar het 'werkt'
 row1 = [[ ],[ ],[ ],[8],[ ],[4],[9],[ ],[3]]
 row2 = [[ ],[8],[1],[6],[3],[ ],[ ],[ ],[5]]
