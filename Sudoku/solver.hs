@@ -1,7 +1,6 @@
 module Solver where 
-import FPPrac
 import Examples
-import Prelude (Int)
+import Prelude
 import Data.List
 
 type Sudoku = [[Square]]
@@ -10,26 +9,26 @@ type Block = [[Square]] -- Same as sudoku, different meaning
 
 --GETTERS
 
-getRow :: Number -> Sudoku -> [Square]
-getRow y sud = sud FPPrac.!! y
+getRow :: Int -> Sudoku -> [Square]
+getRow y sud = sud !! y
 
-getColumn :: Sudoku -> Number -> [Square]
-getColumn sud x = map (FPPrac.!! x) sud
+getColumn :: Sudoku -> Int -> [Square]
+getColumn sud x = map (!! x) sud
 
 getColumns :: Sudoku -> Sudoku
 getColumns sud = map (getColumn sud) [0..8]
 
-getBlock :: Number -> Number -> Sudoku -> Block
+getBlock :: Int -> Int -> Sudoku -> Block
 getBlock x y sud = map (getBlockRow y sud) [(3*x),(3*x)+1, (3*x)+2]
-getBlockRow x sud y =  (fst (FPPrac.splitAt 3 (snd (FPPrac.splitAt (3*x ) (sud FPPrac.!! y)))))
+getBlockRow x sud y =  (fst (splitAt 3 (snd (splitAt (3*x ) (sud !! y)))))
 
---setBlock :: Block -> Number -> Number -> Sudoku -> Sudoku
+setBlock :: Block -> Int -> Int -> Sudoku -> Sudoku
 setBlock block x y sud = ((fst firstRows) ++ middleRows ++ (snd lastRows))
 	where
-		firstRows = FPPrac.splitAt (3*x) sud
-		lastRows = FPPrac.splitAt 3 (snd firstRows)
-		rowsBegin = map (\x -> (FPPrac.splitAt (3*y) ((fst lastRows) FPPrac.!! x))) [0..2]
-		middleRows = map (\x -> ( fst (rowsBegin FPPrac.!! x)) ++ (block FPPrac.!! x) ++ (snd (FPPrac.splitAt 3 (snd (rowsBegin FPPrac.!! x))))) [0..2]
+		firstRows = splitAt (3*x) sud
+		lastRows = splitAt 3 (snd firstRows)
+		rowsBegin = map (\x -> (splitAt (3*y) ((fst lastRows) !! x))) [0..2]
+		middleRows = map (\x -> ( fst (rowsBegin !! x)) ++ (block !! x) ++ (snd (splitAt 3 (snd (rowsBegin !! x))))) [0..2]
 
 --Prepares sudoku for solver
 
