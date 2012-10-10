@@ -1,10 +1,11 @@
 module Solver where 
 import FPPrac
 import Examples
+import Prelude (Int)
 import Data.List
 
 type Sudoku = [[Square]]
-type Square = [Number]
+type Square = [Int]
 type Block = [[Square]] -- Same as sudoku, different meaning
 
 --GETTERS
