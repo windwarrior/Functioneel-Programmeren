@@ -2,6 +2,7 @@ import FPPrac
 import FPPrac.Graphics
 import FPPrac.Events
 import Solver
+import Prelude
 import Debug.Trace
 
 -- De state van het programma
