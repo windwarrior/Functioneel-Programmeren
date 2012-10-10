@@ -24,11 +24,12 @@ getBlock x y sud = map (getBlockRow y sud) [(3*x),(3*x)+1, (3*x)+2]
 getBlockRow x sud y =  (fst (FPPrac.splitAt 3 (snd (FPPrac.splitAt (3*x ) (sud FPPrac.!! y)))))
 
 --setBlock :: Block -> Number -> Number -> Sudoku -> Sudoku
-setBlock block x y sud = (fst firstRows, lastRows)
+setBlock block x y sud = ((fst firstRows) ++ middleRows ++ (snd lastRows))
 	where
 		firstRows = FPPrac.splitAt (3*x) sud
 		lastRows = FPPrac.splitAt 3 (snd firstRows)
-
+		rowsBegin = map (\x -> (FPPrac.splitAt (3*y) ((fst lastRows) FPPrac.!! x))) [0..2]
+		middleRows = map (\x -> ( fst (rowsBegin FPPrac.!! x)) ++ (block FPPrac.!! x) ++ (snd (FPPrac.splitAt 3 (snd (rowsBegin FPPrac.!! x))))) [0..2]
 
 --Prepares sudoku for solver
 
@@ -42,12 +43,12 @@ prepRow (x:xs)
 	| otherwise = x : (prepRow xs)
 
 -- Subtracts x from y, keeping single values
-mudiff :: [Number] -> [Number] -> [Number]
+mudiff :: [Int] -> [Int] -> [Int]
 mudiff x [y] = [y]
 mudiff x y = (y \\ x)
 
 -- Returns list of single values
-getNumbers :: [Square] -> [Number]
+getNumbers :: [Square] -> [Int]
 getNumbers ([x]:xs) = x : (getNumbers xs)
 getNumbers (x:xs) = getNumbers xs
 getNumbers [] = []
