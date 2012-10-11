@@ -30,6 +30,15 @@ setBlock block x y sud = ((fst firstRows) ++ middleRows ++ (snd lastRows))
 		rowsBegin = map (\x -> (splitAt (3*y) ((fst lastRows) !! x))) [0..2]
 		middleRows = map (\x -> ( fst (rowsBegin !! x)) ++ (block !! x) ++ (snd (splitAt 3 (snd (rowsBegin !! x))))) [0..2]
 
+blockToRow :: Block -> [Square]
+blockToRow block = foldl1 (++) block
+
+rowToBlock :: [Square] -> Block
+rowToBlock row = [(fst rowBegin), (fst rowEnd), (snd rowEnd)]
+	where
+		rowBegin = splitAt 3 row
+		rowEnd = splitAt 3 (snd rowBegin)
+
 --Prepares sudoku for solver
 
 prep :: Sudoku -> Sudoku
@@ -55,8 +64,16 @@ getNumbers [] = []
 hsCheckRow :: [Square] -> [Square]
 hsCheckRow row = map (mudiff  (getNumbers row)) row
 
+hsCheckBlock :: Block -> Block
+hsCheckBlock block = rowToBlock (hsCheckRow (blockToRow block))
+
+hsCheckBlocks :: Sudoku -> Sudoku
+hsCheckBlocks sud = foldl hsCheckBlockColumn sud [0..2]
+	where 
+		hsCheckBlockColumn = (\sud y->(foldl (\sud x -> (setBlock (hsCheckBlock (getBlock x y sud)) x y sud)) (sud) [0..2]))
+
 hsCheck :: Sudoku -> Sudoku
-hsCheck sud = map hsCheckRow (map hsCheckRow (getColumns sud))
+hsCheck sud = hsCheckBlocks (map hsCheckRow (getColumns (map hsCheckRow (getColumns sud))))
 
 test = hsCheckRow (head (prep exampleSudokuEasy))
 test1 = map (getColumn exampleSudokuEasy) [0..8]
