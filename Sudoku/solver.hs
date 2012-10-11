@@ -22,6 +22,8 @@ getBlock :: Int -> Int -> Sudoku -> Block
 getBlock x y sud = map (getBlockRow y sud) [(3*x),(3*x)+1, (3*x)+2]
 getBlockRow x sud y =  (fst (splitAt 3 (snd (splitAt (3*x ) (sud !! y)))))
 
+--SETTERS
+
 setBlock :: Block -> Int -> Int -> Sudoku -> Sudoku
 setBlock block x y sud = ((fst firstRows) ++ middleRows ++ (snd lastRows))
 	where
@@ -30,7 +32,10 @@ setBlock block x y sud = ((fst firstRows) ++ middleRows ++ (snd lastRows))
 		rowsBegin = map (\x -> (splitAt (3*y) ((fst lastRows) !! x))) [0..2]
 		middleRows = map (\x -> ( fst (rowsBegin !! x)) ++ (block !! x) ++ (snd (splitAt 3 (snd (rowsBegin !! x))))) [0..2]
 
+-- CONVERTORS
+
 blockToRow :: Block -> [Square]
+blockToRow [] = []
 blockToRow block = foldl1 (++) block
 
 rowToBlock :: [Square] -> Block
@@ -61,19 +66,51 @@ getNumbers ([x]:xs) = x : (getNumbers xs)
 getNumbers (x:xs) = getNumbers xs
 getNumbers [] = []
 
-hsCheckRow :: [Square] -> [Square]
-hsCheckRow row = map (mudiff  (getNumbers row)) row
-
-hsCheckBlock :: Block -> Block
-hsCheckBlock block = rowToBlock (hsCheckRow (blockToRow block))
-
-hsCheckBlocks :: Sudoku -> Sudoku
-hsCheckBlocks sud = foldl hsCheckBlockColumn sud [0..2]
-	where 
-		hsCheckBlockColumn = (\sud y->(foldl (\sud x -> (setBlock (hsCheckBlock (getBlock x y sud)) x y sud)) (sud) [0..2]))
+-- HIDDEN SINGLES ALGORITHM
 
 hsCheck :: Sudoku -> Sudoku
-hsCheck sud = hsCheckBlocks (map hsCheckRow (getColumns (map hsCheckRow (getColumns sud))))
+hsCheck sud = checkSudoku (\row -> map (mudiff (getNumbers row)) row) sud
 
-test = hsCheckRow (head (prep exampleSudokuEasy))
-test1 = map (getColumn exampleSudokuEasy) [0..8]
+-- NAKED PAIR ALGORITHM
+
+getNakedPairs :: [Square] -> [Square]
+getNakedPairs row 
+	| pairsOfpairs == [] = []
+	| otherwise = nub (foldl1 (++) pairsOfpairs)
+	where
+		pairs = (Data.List.group (Data.List.sort (filter (\x -> length x == 2) row)))
+		pairsOfpairs = (filter (\x -> length x == 2) pairs)
+
+removeNakedPairs :: [Square] -> [Square]
+removeNakedPairs row 
+	| pairs == [] = row
+	| otherwise = map (\x -> filterNakedPairs x pairs numbers) row
+	where 
+		pairs = getNakedPairs row
+		numbers = nub (foldl1 (++) pairs)
+
+filterNakedPairs :: Square -> [Square] -> [Int] -> Square
+filterNakedPairs sq pairs numbers 
+	| sq `elem` pairs = sq
+	| otherwise = mudiff numbers sq
+
+npCheck :: Sudoku -> Sudoku
+npCheck sud = checkSudoku (\row -> removeNakedPairs row) sud
+
+-- CHECKERS
+
+recCheck :: (Sudoku -> Sudoku) -> Sudoku -> Sudoku
+recCheck f sud
+	| pass1 == pass2 = pass1
+	| otherwise = recCheck f pass2
+	where 
+		pass1 = f sud
+		pass2 = f pass1
+
+checkSudoku :: ([Square] -> [Square]) -> Sudoku -> Sudoku
+checkSudoku f sud = (checkBlocks f) (map f (getColumns (map f (getColumns sud))))
+
+checkBlocks :: ([Square] -> [Square]) -> Sudoku -> Sudoku
+checkBlocks f sud = foldl checkBlockColumn sud [0..2]
+	where 
+		checkBlockColumn = (\sud y->(foldl (\sud x -> (setBlock (rowToBlock (f (blockToRow (getBlock x y sud)))) x y sud)) (sud) [0..2]))
