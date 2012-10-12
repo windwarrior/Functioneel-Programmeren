@@ -36,7 +36,11 @@ processKey store (MouseDown (x,y)) | f /= Nothing = trace (show i) (store, [])
 		f = hitField (x,y)
 		Just i = f
 -- Debug regel, print ingedrukte toets, matcht op KeyIn's only
-processKey store (KeyIn a) = trace (show a) (store, [])
+processKey store@Store{sudoku = sudo} (KeyIn 'h') = (store', o)
+	where
+		store' = Store{sudoku = (hsCheck sudo)}
+		o = [DrawPicture $ drawSudoku store']
+
 -- Catch all case
 processKey store _ = (store,[])
 
@@ -80,10 +84,10 @@ drawLine (x:xs) (col, row)
 drawMultipleOption :: Square -> (Int, Int) -> [Picture]
 drawMultipleOption [] _ = []
 drawMultipleOption g (x,y)
-	| ((toIndex+1) `elem` g) = (Translate (fromIntegral (x - 1) * (fieldSize/3) - 0.25 * (fieldSize / 3)) ((fromIntegral (-1 + y) * (fieldSize/3) - 0.25 * (fieldSize / 3))) 
+	| ((toIndex+1) `elem` g) = (Translate (fromIntegral (x - 1) * (fieldSize/3) - 0.25 * (fieldSize / 3)) (-1 * (fromIntegral (-1 + y) * (fieldSize/3) + 0.4 * (fieldSize / 3))) 
 												$ Scale 0.1 0.1 
 													$ Color (greyN 0.5)
-														$ Text (show (toIndex + 1))):[] ++ (drawMultipleOption (trace (show (g \\ [toIndex+1])) (g \\ [toIndex+1]))(xnext, ynext))
+														$ Text (show (toIndex + 1))):[] ++ (drawMultipleOption (g \\ [toIndex+1])(xnext, ynext))
 	| otherwise = (drawMultipleOption (g) (xnext, ynext))
 	where
 		toIndex = (y*3 + x)
