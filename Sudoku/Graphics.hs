@@ -1,15 +1,17 @@
 import FPPrac
 import FPPrac.Graphics
 import FPPrac.Events
-import Prelude (Float, Int)
+import Prelude (Float, Int, read)
 import Solver
 import Debug.Trace
 import Data.List ((\\))
+import Data.Char
 import Examples
 
 -- De state van het programma
 data Store = Store {
-    sudoku :: Sudoku
+    sudoku :: Sudoku,
+	numberPressed :: Int
 }
 
 
@@ -25,31 +27,38 @@ blockSize = sudokuSize / 3
 -- Zet de initial state van de store
 startStore :: Sudoku -> Store
 startStore sud = Store {
-    sudoku = sud
+    sudoku = sud,
+	numberPressed = 0
 }
 
 -- Functie om input te verwerken
 processKey :: Store -> Input -> (Store,[Output])
-processKey store (MouseDown (x,y)) | f /= Nothing = trace (show i) (store, [])
-                                   | otherwise    = (store, [])
+processKey store@Store{sudoku = sudo, numberPressed = num} (MouseDown (x,y)) 
+	| f /= Nothing && num /= 0 = (store', o)
+	| otherwise    = (store, [])
 	where
+		store' = store{sudoku = setSquare i num sudo, numberPressed = 0}
+		o = [ScreenClear, DrawPicture $ drawSudoku store']
 		f = hitField (x,y)
 		Just i = f
--- Debug regel, print ingedrukte toets, matcht op KeyIn's only
+		
 processKey store (KeyIn any)
 	| any == 'h' = applyFunction (hsCheck) store
 	| any == 'v' = applyFunction (vsCheck) store
 	| any == 'n' = applyFunction (npCheck) store
+	| isNumber any = trace (show number) (store{numberPressed = number}, [])
 	| otherwise = (store, [])
-		
+	where
+		number = read (any:"") :: Int
 -- Catch all case
 processKey store _ = (store,[])
+
 
 
 applyFunction :: (Sudoku -> Sudoku) -> Store -> (Store, [Output])
 applyFunction f store@Store{sudoku = sudo} = (store', o)
 	where
-		store' = Store{sudoku = (f sudo)}
+		store' = store{sudoku = (f sudo)}
 		o = [ScreenClear, DrawPicture $ drawSudoku store']
 
 -- Deze functie werkt, misschien even bepalen wat 0,0 is, bovenin of onderin :>

@@ -2,6 +2,7 @@ module Solver where
 import Examples
 import Prelude
 import Data.List
+import Debug.Trace
 
 type Sudoku = [[Square]]
 type Square = [Int]
@@ -31,7 +32,15 @@ setBlock block x y sud = ((fst firstRows) ++ middleRows ++ (snd lastRows))
 		lastRows = splitAt 3 (snd firstRows)
 		rowsBegin = map (\x -> (splitAt (3*y) ((fst lastRows) !! x))) [0..2]
 		middleRows = map (\x -> ( fst (rowsBegin !! x)) ++ (block !! x) ++ (snd (splitAt 3 (snd (rowsBegin !! x))))) [0..2]
-
+		
+setSquare :: (Int, Int) -> Int -> Sudoku -> Sudoku
+setSquare (x,y) num sud = sudokuResult
+	where
+		row = getRow y sud
+		(rowStart, rowEnd) = splitAt x row
+		rowResult = rowStart ++ [[num]] ++ (drop 1 rowEnd)
+		(columnsStart, columnsEnd) = splitAt y sud
+		sudokuResult = columnsStart ++ [rowResult] ++ (drop 1 columnsEnd)
 -- CONVERTORS
 
 blockToRow :: Block -> [Square]
@@ -136,4 +145,6 @@ filterNakedPairs sq pairs numbers
 
 npCheck :: Sudoku -> Sudoku
 npCheck sud = checkSudoku (\row -> removeNakedPairs row) sud
+
+
 
