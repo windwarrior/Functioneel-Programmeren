@@ -19,19 +19,20 @@ getColumns :: Sudoku -> Sudoku
 getColumns sud = map (getColumn sud) [0..8]
 
 getBlock :: Int -> Int -> Sudoku -> Block
-getBlock x y sud = map (getBlockRow y sud) [(3*x),(3*x)+1, (3*x)+2]
-getBlockRow x sud y =  (fst (splitAt 3 (snd (splitAt (3*x ) (sud !! y)))))
+getBlock x y sud = map (getBlockRow y sud) [(3*x)..(3*x)+2]
+getBlockRow x sud y =  (take 3 (drop (3*x ) (sud !! y)))
 
 --SETTERS
 
-setBlock :: Block -> Int -> Int -> Sudoku -> Sudoku
-setBlock block x y sud = ((fst firstRows) ++ middleRows ++ (snd lastRows))
+setBlock block x y sud = firstRows ++ newMiddleRows ++ lastRows
 	where
-		firstRows = splitAt (3*x) sud
-		lastRows = splitAt 3 (snd firstRows)
-		rowsBegin = map (\x -> (splitAt (3*y) ((fst lastRows) !! x))) [0..2]
-		middleRows = map (\x -> ( fst (rowsBegin !! x)) ++ (block !! x) ++ (snd (splitAt 3 (snd (rowsBegin !! x))))) [0..2]
-
+		firstRows = take (3*x) sud
+		lastRows = drop (3*(x+1)) sud
+		middleRows = take 3 (drop (3*x) sud)
+		middleRowsBegin = map (take (3*y)) middleRows
+		middleRowsEnd = map (drop (3*(y+1))) middleRows
+		newMiddleRows = map (\x -> (middleRowsBegin !! x) ++ (block !! x) ++ (middleRowsEnd !! x)) [0..2]
+		
 -- CONVERTORS
 
 blockToRow :: Block -> [Square]
