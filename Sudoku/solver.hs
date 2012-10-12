@@ -66,10 +66,50 @@ getNumbers ([x]:xs) = x : (getNumbers xs)
 getNumbers (x:xs) = getNumbers xs
 getNumbers [] = []
 
+-- CHECKERS
+
+recCheck :: (Sudoku -> Sudoku) -> Sudoku -> Sudoku
+recCheck f sud
+	| pass1 == pass2 = pass1
+	| otherwise = recCheck f pass2
+	where 
+		pass1 = f sud
+		pass2 = f pass1
+
+checkSudoku :: ([Square] -> [Square]) -> Sudoku -> Sudoku
+checkSudoku f sud = (checkBlocks f) (map f (getColumns (map f (getColumns sud))))
+
+checkBlocks :: ([Square] -> [Square]) -> Sudoku -> Sudoku
+checkBlocks f sud = foldl checkBlockColumn sud [0..2]
+	where 
+		checkBlockColumn = (\sud y->(foldl (\sud x -> (setBlock (rowToBlock (f (blockToRow (getBlock x y sud)))) x y sud)) (sud) [0..2]))
+
+-- VISIBLE SINGLES ALGORITHM
+
+vsCheck :: Sudoku -> Sudoku
+vsCheck sud = checkSudoku (\row -> map (mudiff (getNumbers row)) row) sud
+
 -- HIDDEN SINGLES ALGORITHM
 
-hsCheck :: Sudoku -> Sudoku
-hsCheck sud = checkSudoku (\row -> map (mudiff (getNumbers row)) row) sud
+findHiddenSingles row = filter (\x -> length x == 1) (Data.List.group (Data.List.sort (foldl1 (++) row)))
+
+hsCheck sud = checkSudoku removeHiddenSingles sud
+
+removeHiddenSingles :: [Square] -> [Square]
+removeHiddenSingles row 
+	| singles == [] = row
+	| otherwise = map (\sq -> removeHiddenSingle sq hs) row
+	where
+		singles = (findHiddenSingles row)
+		hs = foldl1 (++) singles
+
+removeHiddenSingle :: Square -> [Int] -> Square
+removeHiddenSingle sq hs
+	| hasHiddenSingle = hiddenSingles
+	| otherwise = sq
+	where
+		hasHiddenSingle = not (hiddenSingles == [])
+		hiddenSingles = (intersect hs sq)
 
 -- NAKED PAIR ALGORITHM
 
@@ -97,20 +137,3 @@ filterNakedPairs sq pairs numbers
 npCheck :: Sudoku -> Sudoku
 npCheck sud = checkSudoku (\row -> removeNakedPairs row) sud
 
--- CHECKERS
-
-recCheck :: (Sudoku -> Sudoku) -> Sudoku -> Sudoku
-recCheck f sud
-	| pass1 == pass2 = pass1
-	| otherwise = recCheck f pass2
-	where 
-		pass1 = f sud
-		pass2 = f pass1
-
-checkSudoku :: ([Square] -> [Square]) -> Sudoku -> Sudoku
-checkSudoku f sud = (checkBlocks f) (map f (getColumns (map f (getColumns sud))))
-
-checkBlocks :: ([Square] -> [Square]) -> Sudoku -> Sudoku
-checkBlocks f sud = foldl checkBlockColumn sud [0..2]
-	where 
-		checkBlockColumn = (\sud y->(foldl (\sud x -> (setBlock (rowToBlock (f (blockToRow (getBlock x y sud)))) x y sud)) (sud) [0..2]))
