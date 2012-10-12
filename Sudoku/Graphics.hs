@@ -36,9 +36,21 @@ processKey store (MouseDown (x,y)) | f /= Nothing = trace (show i) (store, [])
 		f = hitField (x,y)
 		Just i = f
 -- Debug regel, print ingedrukte toets, matcht op KeyIn's only
-processKey store (KeyIn a) = trace (show a) (store, [])
+processKey store (KeyIn any)
+	| any == 'h' = applyFunction (hsCheck) store
+	| any == 'v' = applyFunction (vsCheck) store
+	| any == 'n' = applyFunction (npCheck) store
+	| otherwise = (store, [])
+		
 -- Catch all case
 processKey store _ = (store,[])
+
+
+applyFunction :: (Sudoku -> Sudoku) -> Store -> (Store, [Output])
+applyFunction f store@Store{sudoku = sudo} = (store', o)
+	where
+		store' = Store{sudoku = (f sudo)}
+		o = [ScreenClear, DrawPicture $ drawSudoku store']
 
 -- Deze functie werkt, misschien even bepalen wat 0,0 is, bovenin of onderin :>
 -- Er staat nu een mooie hack om het om te draaien
@@ -80,10 +92,10 @@ drawLine (x:xs) (col, row)
 drawMultipleOption :: Square -> (Int, Int) -> [Picture]
 drawMultipleOption [] _ = []
 drawMultipleOption g (x,y)
-	| ((toIndex+1) `elem` g) = (Translate (fromIntegral (x - 1) * (fieldSize/3) - 0.25 * (fieldSize / 3)) ((fromIntegral (-1 + y) * (fieldSize/3) - 0.25 * (fieldSize / 3))) 
+	| ((toIndex+1) `elem` g) = (Translate (fromIntegral (x - 1) * (fieldSize/3) - 0.25 * (fieldSize / 3)) (-1 * (fromIntegral (-1 + y) * (fieldSize/3) + 0.4 * (fieldSize / 3))) 
 												$ Scale 0.1 0.1 
 													$ Color (greyN 0.5)
-														$ Text (show (toIndex + 1))):[] ++ (drawMultipleOption (trace (show (g \\ [toIndex+1])) (g \\ [toIndex+1]))(xnext, ynext))
+														$ Text (show (toIndex + 1))):[] ++ (drawMultipleOption (g \\ [toIndex+1])(xnext, ynext))
 	| otherwise = (drawMultipleOption (g) (xnext, ynext))
 	where
 		toIndex = (y*3 + x)
