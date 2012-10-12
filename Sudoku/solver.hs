@@ -84,6 +84,14 @@ checkBlocks f sud = foldl checkBlockColumn sud [0..2]
 	where 
 		checkBlockColumn = (\sud y->(foldl (\sud x -> (setBlock (rowToBlock (f (blockToRow (getBlock x y sud)))) x y sud)) (sud) [0..2]))
 
+		
+
+
+		
+		
+		
+		
+		
 -- VISIBLE SINGLES ALGORITHM
 
 vsCheck :: Sudoku -> Sudoku
@@ -91,20 +99,22 @@ vsCheck sud = checkSudoku (\row -> map (mudiff (getNumbers row)) row) sud
 
 -- HIDDEN SINGLES ALGORITHM
 
-findHiddenSingles row = filter (\x -> length x == 1) (Data.List.group (Data.List.sort (foldl1 (++) row)))
-
+hsCheck :: Sudoku -> Sudoku
 hsCheck sud = checkSudoku removeHiddenSingles sud
+
+getHiddenSingles :: [Square] -> [Square]
+getHiddenSingles row = filter (\x -> length x == 1) (Data.List.group (Data.List.sort (foldl1 (++) row)))
 
 removeHiddenSingles :: [Square] -> [Square]
 removeHiddenSingles row 
 	| singles == [] = row
-	| otherwise = map (\sq -> removeHiddenSingle sq hs) row
+	| otherwise = map (\sq -> filterHiddenSingles sq hs) row
 	where
-		singles = (findHiddenSingles row)
+		singles = (getHiddenSingles row)
 		hs = foldl1 (++) singles
 
-removeHiddenSingle :: Square -> [Int] -> Square
-removeHiddenSingle sq hs
+filterHiddenSingles :: Square -> [Int] -> Square
+filterHiddenSingles sq hs
 	| hasHiddenSingle = hiddenSingles
 	| otherwise = sq
 	where
@@ -112,6 +122,9 @@ removeHiddenSingle sq hs
 		hiddenSingles = (intersect hs sq)
 
 -- NAKED PAIR ALGORITHM
+
+npCheck :: Sudoku -> Sudoku
+npCheck sud = checkSudoku (\row -> removeNakedPairs row) sud
 
 getNakedPairs :: [Square] -> [Square]
 getNakedPairs row 
@@ -134,6 +147,4 @@ filterNakedPairs sq pairs numbers
 	| sq `elem` pairs = sq
 	| otherwise = mudiff numbers sq
 
-npCheck :: Sudoku -> Sudoku
-npCheck sud = checkSudoku (\row -> removeNakedPairs row) sud
 
