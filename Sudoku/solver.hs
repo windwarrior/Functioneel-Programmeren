@@ -30,8 +30,7 @@ getSquareAt (x,y) sud = sqr
 		sqr = row !! x
 
 --SETTERS
-
-<<<<<<< HEAD
+{-
 setBlock :: Block -> Int -> Int -> Sudoku -> Sudoku
 setBlock block x y sud = ((fst firstRows) ++ middleRows ++ (snd lastRows))
 	where
@@ -39,7 +38,7 @@ setBlock block x y sud = ((fst firstRows) ++ middleRows ++ (snd lastRows))
 		lastRows = splitAt 3 (snd firstRows)
 		rowsBegin = map (\x -> (splitAt (3*y) ((fst lastRows) !! x))) [0..2]
 		middleRows = map (\x -> ( fst (rowsBegin !! x)) ++ (block !! x) ++ (snd (splitAt 3 (snd (rowsBegin !! x))))) [0..2]
-		
+-}		
 setSquare :: (Int, Int) -> Int -> Sudoku -> Sudoku
 setSquare (x,y) num sud = sudokuResult
 	where
