@@ -20,8 +20,8 @@ getColumns :: Sudoku -> Sudoku
 getColumns sud = map (getColumn sud) [0..8]
 
 getBlock :: Int -> Int -> Sudoku -> Block
-getBlock x y sud = map (getBlockRow y sud) [(3*x),(3*x)+1, (3*x)+2]
-getBlockRow x sud y =  (fst (splitAt 3 (snd (splitAt (3*x ) (sud !! y)))))
+getBlock x y sud = map (getBlockRow y sud) [(3*x)..(3*x)+2]
+getBlockRow x sud y =  (take 3 (drop (3*x ) (sud !! y)))
 
 getSquareAt :: (Int, Int) -> Sudoku -> Square
 getSquareAt (x,y) sud = sqr
@@ -31,6 +31,7 @@ getSquareAt (x,y) sud = sqr
 
 --SETTERS
 
+<<<<<<< HEAD
 setBlock :: Block -> Int -> Int -> Sudoku -> Sudoku
 setBlock block x y sud = ((fst firstRows) ++ middleRows ++ (snd lastRows))
 	where
@@ -53,6 +54,16 @@ setSquareWithSafety :: (Int, Int) -> Int -> (Sudoku, Sudoku) -> (Sudoku, Bool)
 setSquareWithSafety (x,y) num (sud_unsolved, sud_solved)
 	| num `elem` (getSquareAt (x,y) sud_solved) = (setSquare (x,y) num sud_unsolved, True)
 	| otherwise = (sud_unsolved, False)
+
+setBlock block x y sud = firstRows ++ newMiddleRows ++ lastRows
+	where
+		firstRows = take (3*x) sud
+		lastRows = drop (3*(x+1)) sud
+		middleRows = take 3 (drop (3*x) sud)
+		middleRowsBegin = map (take (3*y)) middleRows
+		middleRowsEnd = map (drop (3*(y+1))) middleRows
+		newMiddleRows = map (\x -> (middleRowsBegin !! x) ++ (block !! x) ++ (middleRowsEnd !! x)) [0..2]
+
 -- CONVERTORS
 
 blockToRow :: Block -> [Square]
@@ -105,6 +116,14 @@ checkBlocks f sud = foldl checkBlockColumn sud [0..2]
 	where 
 		checkBlockColumn = (\sud y->(foldl (\sud x -> (setBlock (rowToBlock (f (blockToRow (getBlock x y sud)))) x y sud)) (sud) [0..2]))
 
+		
+
+
+		
+		
+		
+		
+		
 -- VISIBLE SINGLES ALGORITHM
 
 vsCheck :: Sudoku -> Sudoku
@@ -112,20 +131,22 @@ vsCheck sud = checkSudoku (\row -> map (mudiff (getNumbers row)) row) sud
 
 -- HIDDEN SINGLES ALGORITHM
 
-findHiddenSingles row = filter (\x -> length x == 1) (Data.List.group (Data.List.sort (foldl1 (++) row)))
-
+hsCheck :: Sudoku -> Sudoku
 hsCheck sud = checkSudoku removeHiddenSingles sud
+
+getHiddenSingles :: [Square] -> [Square]
+getHiddenSingles row = filter (\x -> length x == 1) (Data.List.group (Data.List.sort (foldl1 (++) row)))
 
 removeHiddenSingles :: [Square] -> [Square]
 removeHiddenSingles row 
 	| singles == [] = row
-	| otherwise = map (\sq -> removeHiddenSingle sq hs) row
+	| otherwise = map (\sq -> filterHiddenSingles sq hs) row
 	where
-		singles = (findHiddenSingles row)
+		singles = (getHiddenSingles row)
 		hs = foldl1 (++) singles
 
-removeHiddenSingle :: Square -> [Int] -> Square
-removeHiddenSingle sq hs
+filterHiddenSingles :: Square -> [Int] -> Square
+filterHiddenSingles sq hs
 	| hasHiddenSingle = hiddenSingles
 	| otherwise = sq
 	where
@@ -133,6 +154,9 @@ removeHiddenSingle sq hs
 		hiddenSingles = (intersect hs sq)
 
 -- NAKED PAIR ALGORITHM
+
+npCheck :: Sudoku -> Sudoku
+npCheck sud = checkSudoku (\row -> removeNakedPairs row) sud
 
 getNakedPairs :: [Square] -> [Square]
 getNakedPairs row 
@@ -155,8 +179,6 @@ filterNakedPairs sq pairs numbers
 	| sq `elem` pairs = sq
 	| otherwise = mudiff numbers sq
 
-npCheck :: Sudoku -> Sudoku
-npCheck sud = checkSudoku (\row -> removeNakedPairs row) sud
 
 
 
