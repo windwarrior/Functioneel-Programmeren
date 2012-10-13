@@ -51,7 +51,7 @@ processInput store (KeyIn any)
 	| any == 'n' = applyFunction (npCheck) store
 	| any == 'p' = applyFunction (prep) store
 	| any == 'r' = (store,[GraphPrompt ("Read sudoku", "filename")])
-	| isNumber any = trace (show number) (store{numberPressed = number}, [])
+	| isNumber any = trace (show number) (store{numberPressed = number}, [ScreenClear, DrawPicture $ drawSudoku store{numberPressed = number}]) -- anders laat hij de selected niet zien :P
 	| otherwise = (store, [])
 	where
 		number = read (any:"") :: Int
@@ -70,6 +70,8 @@ processInput store (File fileName (TXTFile contents))
 		
 -- Catch all case
 processInput store _ = (store,[])
+
+
 
 readSudoku :: String -> Sudoku
 readSudoku content = [readSudokuLine x | x <- (lines content)]
@@ -109,11 +111,13 @@ drawSingleBackground :: (Float, Float) -> Picture
 drawSingleBackground (xPos, yPos) = translate (xPos * blockSize) (yPos * blockSize) $ Color (greyN 0.9) $ rectangleSolid blockSize blockSize
 
 drawSudoku :: Store -> Picture
-drawSudoku store@Store{sudoku = sudoku} = Pictures $
+drawSudoku store@Store{sudoku = sudoku, numberPressed = num} = Pictures $
     (drawBackgrounds)
     ++ (map (Line) [[(-halfSudokuSize + x * fieldSize, halfSudokuSize), (-halfSudokuSize + x * fieldSize, -halfSudokuSize)]| x <- [0..9]]) -- these are the vertical boardlines
     ++ (map (Line) [[(halfSudokuSize, -halfSudokuSize + x * fieldSize), (-halfSudokuSize, -halfSudokuSize + x * fieldSize)]| x <- [0..9]]) -- these are the horizontal boardlines
     ++ (drawNumbers sudoku 0)
+	++ drawStatusLine
+	++ (drawSelectedNumber num)
   
 drawNumbers :: Sudoku -> Float -> [Picture]
 drawNumbers [] _ = []
@@ -140,6 +144,22 @@ drawMultipleOption g (x,y)
 		toIndex = (y*3 + x)
 		xnext = (toIndex + 1) `mod` 3
 		ynext = (toIndex + 1) `div` 3
+
+drawSelectedNumber :: Int -> [Picture]
+drawSelectedNumber num
+		| num /= 0 = [msg, msg_number]
+		| otherwise = [msg, msg_no_number]
+		where
+			msg           = Translate (-400) (-230) $ Scale 0.15 0.15 $ Text "Selected:" 
+			msg_number    = Translate (-300) (-230) $ Scale 0.15 0.15 $ Color red $ Text (show num)
+			msg_no_number = Translate (-300) (-230) $ Scale 0.15 0.15 $ Color red $ Text "None"
+		
+drawStatusLine :: [Picture]
+drawStatusLine = 
+	[	Translate (-400) (-260) $ Scale 0.15 0.15 $ Text "Input:",
+		Translate (-300) (-260) $ Scale 0.15 0.15 $ Text "[r]ead",
+		Translate (-400) (-290) $ Scale 0.15 0.15 $ Text "Solving:",
+		Translate (-300) (-290) $ Scale 0.15 0.15 $ Text "[p]repare [n]akedPair [h]iddenSingle [v]isibleSingle"]
 		
 
 
