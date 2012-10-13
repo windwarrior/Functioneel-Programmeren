@@ -49,14 +49,38 @@ processInput store (KeyIn any)
 	| any == 'h' = applyFunction (hsCheck) store
 	| any == 'v' = applyFunction (vsCheck) store
 	| any == 'n' = applyFunction (npCheck) store
+	| any == 'p' = applyFunction (prep) store
 	| any == 'r' = (store,[GraphPrompt ("Read sudoku", "filename")])
 	| isNumber any = trace (show number) (store{numberPressed = number}, [])
 	| otherwise = (store, [])
 	where
 		number = read (any:"") :: Int
-
+		
+processInput store (Prompt ("Read sudoku", fileName))
+	| fileName /= "" = (store, [ReadFile fileName (TXTFile "")])
+	| otherwise = (store, [])
+	
+processInput store (File fileName (TXTFile contents)) 
+	| contents /= "" = (newStore, o)
+	| otherwise = (store, [])
+	where
+		newSudoku = readSudoku contents
+		newStore = Store{sudoku = newSudoku, sudoku_solved = recCheck (vsCheck) $ prep newSudoku, numberPressed = 0}
+		o = [ScreenClear, DrawPicture $ drawSudoku newStore]
+		
 -- Catch all case
 processInput store _ = (store,[])
+
+readSudoku :: String -> Sudoku
+readSudoku content = [readSudokuLine x | x <- (lines content)]
+
+readSudokuLine :: String -> [Square]
+readSudokuLine [] = []
+readSudokuLine (x:xs)
+	| isNumber x = [[number]] ++ readSudokuLine xs
+	| otherwise = [[]] ++ readSudokuLine xs
+	where
+		number = read (x:"") :: Int
 
 
 
