@@ -34,8 +34,8 @@ startStore sud = Store {
 }
 
 -- Functie om input te verwerken
-processKey :: Store -> Input -> (Store,[Output])
-processKey store@Store{sudoku = sudo, sudoku_solved = sudo_solv, numberPressed = num} (MouseDown (x,y)) 
+processInput :: Store -> Input -> (Store,[Output])
+processInput store@Store{sudoku = sudo, sudoku_solved = sudo_solv, numberPressed = num} (MouseDown (x,y)) 
 	| f /= Nothing && num /= 0 = trace (show is_set) (store', o)
 	| otherwise    = (store, [])
 	where
@@ -45,7 +45,7 @@ processKey store@Store{sudoku = sudo, sudoku_solved = sudo_solv, numberPressed =
 		f = hitField (x,y)
 		Just i = f
 		
-processKey store (KeyIn any)
+processInput store (KeyIn any)
 	| any == 'h' = applyFunction (hsCheck) store
 	| any == 'v' = applyFunction (vsCheck) store
 	| any == 'n' = applyFunction (npCheck) store
@@ -55,10 +55,8 @@ processKey store (KeyIn any)
 	where
 		number = read (any:"") :: Int
 
-  
-
 -- Catch all case
-processKey store _ = (store,[])
+processInput store _ = (store,[])
 
 
 
@@ -122,7 +120,7 @@ drawMultipleOption g (x,y)
 
 
 doSudoku :: Sudoku ->  IO ()
-doSudoku sud = installEventHandler "sudoku" processKey store startPic 10
+doSudoku sud = installEventHandler "sudoku" processInput store startPic 10
     where 
         store = startStore sud
         startPic = drawSudoku store
