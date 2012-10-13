@@ -12,7 +12,8 @@ import Examples
 data Store = Store {
     sudoku :: Sudoku,
 	sudoku_solved :: Sudoku,
-	numberPressed :: Int
+	numberPressed :: Int,
+	wrongField :: (Int, Int)
 }
 
 
@@ -30,18 +31,22 @@ startStore :: Sudoku -> Store
 startStore sud = Store {
     sudoku = sud,
 	sudoku_solved = recCheck (vsCheck) $ prep sud,
-	numberPressed = 0
+	numberPressed = 0,
+	wrongField = (-1,-1)
 }
 
 -- Functie om input te verwerken
 processInput :: Store -> Input -> (Store,[Output])
 processInput store@Store{sudoku = sudo, sudoku_solved = sudo_solv, numberPressed = num} (MouseDown (x,y)) 
-	| f /= Nothing && num /= 0 = trace (show is_set) (store', o)
+	| f /= Nothing && num /= 0 && is_set = (store', o)
+	| f /= Nothing && num /= 0 = (store_not_set, o_not_set)
 	| otherwise    = (store, [])
 	where
 		(sudo_ins, is_set) = setSquareWithSafety i num (sudo, sudo_solv) 
-		store' = store{sudoku = sudo_ins, numberPressed = 0}
+		store' = store{sudoku = sudo_ins, numberPressed = 0, wrongField = (-1,-1)}
+		store_not_set = store{numberPressed = 0, wrongField = i}
 		o = [ScreenClear, DrawPicture $ drawSudoku store']
+		o_not_set = [ScreenClear, DrawPicture $ drawSudoku store_not_set]
 		f = hitField (x,y)
 		Just i = f
 		
@@ -51,6 +56,7 @@ processInput store (KeyIn any)
 	| any == 'n' = applyFunction (npCheck) store
 	| any == 'p' = applyFunction (prep) store
 	| any == 'r' = (store,[GraphPrompt ("Read sudoku", "filename")])
+	| any == 's' = (store,[GraphPrompt ("save as", "filename")])
 	| isNumber any = trace (show number) (store{numberPressed = number}, [ScreenClear, DrawPicture $ drawSudoku store{numberPressed = number}]) -- anders laat hij de selected niet zien :P
 	| otherwise = (store, [])
 	where
@@ -65,13 +71,24 @@ processInput store (File fileName (TXTFile contents))
 	| otherwise = (store, [])
 	where
 		newSudoku = readSudoku contents
-		newStore = Store{sudoku = newSudoku, sudoku_solved = recCheck (vsCheck) $ prep newSudoku, numberPressed = 0}
+		newStore = Store{sudoku = newSudoku, sudoku_solved = recCheck (vsCheck) $ prep newSudoku, numberPressed = 0, wrongField = (-1,-1)}
 		o = [ScreenClear, DrawPicture $ drawSudoku newStore]
+		
+processInput store@Store{sudoku = sudo} (Prompt ("save as", nm)) = (store, [SaveFile nm (TXTFile saveText)])
+	where
+		saveText = serializeSudoku sudo
 		
 -- Catch all case
 processInput store _ = (store,[])
 
+serializeSudoku :: Sudoku -> String
+serializeSudoku sudo = foldl (++) "" [serializeSudokuLine x | x <- sudo]
 
+serializeSudokuLine :: [Square] -> String
+serializeSudokuLine [] = "\n"
+serializeSudokuLine (x:xs)
+	| length x == 1 = (show (x!!0)) ++ serializeSudokuLine xs
+	| otherwise = "." ++ serializeSudokuLine xs
 
 readSudoku :: String -> Sudoku
 readSudoku content = [readSudokuLine x | x <- (lines content)]
@@ -89,7 +106,7 @@ readSudokuLine (x:xs)
 applyFunction :: (Sudoku -> Sudoku) -> Store -> (Store, [Output])
 applyFunction f store@Store{sudoku = sudo} = (store', o)
 	where
-		store' = store{sudoku = (f sudo)}
+		store' = store{sudoku = (f sudo), wrongField = (-1,-1)}
 		o = [ScreenClear, DrawPicture $ drawSudoku store']
 
 -- Deze functie werkt, misschien even bepalen wat 0,0 is, bovenin of onderin :>
@@ -111,8 +128,9 @@ drawSingleBackground :: (Float, Float) -> Picture
 drawSingleBackground (xPos, yPos) = translate (xPos * blockSize) (yPos * blockSize) $ Color (greyN 0.9) $ rectangleSolid blockSize blockSize
 
 drawSudoku :: Store -> Picture
-drawSudoku store@Store{sudoku = sudoku, numberPressed = num} = Pictures $
+drawSudoku store@Store{sudoku = sudoku, numberPressed = num, wrongField = field} = Pictures $
     (drawBackgrounds)
+	++ (drawWrong field)
     ++ (map (Line) [[(-halfSudokuSize + x * fieldSize, halfSudokuSize), (-halfSudokuSize + x * fieldSize, -halfSudokuSize)]| x <- [0..9]]) -- these are the vertical boardlines
     ++ (map (Line) [[(halfSudokuSize, -halfSudokuSize + x * fieldSize), (-halfSudokuSize, -halfSudokuSize + x * fieldSize)]| x <- [0..9]]) -- these are the horizontal boardlines
     ++ (drawNumbers sudoku 0)
@@ -157,11 +175,13 @@ drawSelectedNumber num
 drawStatusLine :: [Picture]
 drawStatusLine = 
 	[	Translate (-400) (-260) $ Scale 0.15 0.15 $ Text "Input:",
-		Translate (-300) (-260) $ Scale 0.15 0.15 $ Text "[r]ead",
+		Translate (-300) (-260) $ Scale 0.15 0.15 $ Text "[r]ead [s]ave",
 		Translate (-400) (-290) $ Scale 0.15 0.15 $ Text "Solving:",
 		Translate (-300) (-290) $ Scale 0.15 0.15 $ Text "[p]repare [n]akedPair [h]iddenSingle [v]isibleSingle"]
 		
-
+drawWrong :: (Int, Int) -> [Picture]
+drawWrong (-1,-1) = []
+drawWrong (x,y) = [Translate (-1 * halfSudokuSize + ((fromIntegral x) + 0.5) * fieldSize) (halfSudokuSize - ((fromIntegral y) + 0.5) * fieldSize) $ Color red $ rectangleSolid fieldSize fieldSize]
 
 doSudoku :: Sudoku ->  IO ()
 doSudoku sud = installEventHandler "sudoku" processInput store startPic 10
