@@ -11,6 +11,7 @@ import Examples
 -- De state van het programma
 data Store = Store {
     sudoku :: Sudoku,
+	sudoku_solved :: Sudoku,
 	numberPressed :: Int
 }
 
@@ -28,16 +29,18 @@ blockSize = sudokuSize / 3
 startStore :: Sudoku -> Store
 startStore sud = Store {
     sudoku = sud,
+	sudoku_solved = recCheck (vsCheck) $ prep sud,
 	numberPressed = 0
 }
 
 -- Functie om input te verwerken
 processKey :: Store -> Input -> (Store,[Output])
-processKey store@Store{sudoku = sudo, numberPressed = num} (MouseDown (x,y)) 
-	| f /= Nothing && num /= 0 = (store', o)
+processKey store@Store{sudoku = sudo, sudoku_solved = sudo_solv, numberPressed = num} (MouseDown (x,y)) 
+	| f /= Nothing && num /= 0 = trace (show is_set) (store', o)
 	| otherwise    = (store, [])
 	where
-		store' = store{sudoku = setSquare i num sudo, numberPressed = 0}
+		(sudo_ins, is_set) = setSquareWithSafety i num (sudo, sudo_solv) 
+		store' = store{sudoku = sudo_ins, numberPressed = 0}
 		o = [ScreenClear, DrawPicture $ drawSudoku store']
 		f = hitField (x,y)
 		Just i = f
@@ -46,10 +49,14 @@ processKey store (KeyIn any)
 	| any == 'h' = applyFunction (hsCheck) store
 	| any == 'v' = applyFunction (vsCheck) store
 	| any == 'n' = applyFunction (npCheck) store
+	| any == 'r' = (store,[GraphPrompt ("Read sudoku", "filename")])
 	| isNumber any = trace (show number) (store{numberPressed = number}, [])
 	| otherwise = (store, [])
 	where
 		number = read (any:"") :: Int
+
+  
+
 -- Catch all case
 processKey store _ = (store,[])
 
@@ -64,6 +71,7 @@ applyFunction f store@Store{sudoku = sudo} = (store', o)
 -- Deze functie werkt, misschien even bepalen wat 0,0 is, bovenin of onderin :>
 -- Er staat nu een mooie hack om het om te draaien
 -- Stiekem is het wel een beetje hardcoded :x
+-- (x,y) coordinaten naar (row, column) dus NIET naar (x,y)
 hitField :: (Float, Float) -> Maybe (Int, Int)
 hitField (x,y) 
     | x >= -halfSudokuSize && x <= halfSudokuSize && y >= -halfSudokuSize && y <= halfSudokuSize = Just ((floor ((x+halfSudokuSize) / fieldSize)),(8 - floor ((y+halfSudokuSize) / fieldSize)))

@@ -23,6 +23,12 @@ getBlock :: Int -> Int -> Sudoku -> Block
 getBlock x y sud = map (getBlockRow y sud) [(3*x),(3*x)+1, (3*x)+2]
 getBlockRow x sud y =  (fst (splitAt 3 (snd (splitAt (3*x ) (sud !! y)))))
 
+getSquareAt :: (Int, Int) -> Sudoku -> Square
+getSquareAt (x,y) sud = sqr
+	where
+		row = getRow y sud
+		sqr = row !! x
+
 --SETTERS
 
 setBlock :: Block -> Int -> Int -> Sudoku -> Sudoku
@@ -41,6 +47,12 @@ setSquare (x,y) num sud = sudokuResult
 		rowResult = rowStart ++ [[num]] ++ (drop 1 rowEnd)
 		(columnsStart, columnsEnd) = splitAt y sud
 		sudokuResult = columnsStart ++ [rowResult] ++ (drop 1 columnsEnd)
+-- GUI to solver functions
+
+setSquareWithSafety :: (Int, Int) -> Int -> (Sudoku, Sudoku) -> (Sudoku, Bool)
+setSquareWithSafety (x,y) num (sud_unsolved, sud_solved)
+	| num `elem` (getSquareAt (x,y) sud_solved) = (setSquare (x,y) num sud_unsolved, True)
+	| otherwise = (sud_unsolved, False)
 -- CONVERTORS
 
 blockToRow :: Block -> [Square]
