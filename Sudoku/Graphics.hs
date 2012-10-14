@@ -79,7 +79,7 @@ processInput store (KeyIn any)
 	| any == 'v' = applyFunction (vsCheck) store
 	| any == 'n' = applyFunction (npCheck) store
 	| any == 'p' = applyFunction (prep) store
-	-- | any == 'o' = applyFunction (solve) store
+	| any == 'o' = applyFunction (solve) store
 	| any == 'r' = (store,[GraphPrompt ("Read sudoku", "filename")])
 	| any == 's' = (store,[GraphPrompt ("save as", "filename")])
 	| isNumber any = trace (show number) (store{numberPressed = number, wrongField = (-1,-1), error_label=""}, [ScreenClear, DrawPicture $ drawSudoku store{numberPressed = number, wrongField = (-1,-1), error_label=""}]) -- anders laat hij de selected niet zien :P

@@ -178,6 +178,16 @@ filterNakedPairs sq pairs numbers
 	| sq `elem` pairs = sq
 	| otherwise = mudiff numbers sq
 
+solve :: Sudoku -> Sudoku
+solve sud
+	| first == sud = sud
+	| second /= first = solve second
+	| third /= second = solve third
+	| otherwise = third
+	where 
+		first = recCheck vsCheck sud
+		second = recCheck hsCheck first
+		third = recCheck npCheck second
 
 
 
