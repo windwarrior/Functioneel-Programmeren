@@ -8,6 +8,14 @@ import Data.List ((\\))
 import Data.Char
 import Examples
 
+-- Mooie plek voor een TODO:
+	-- Kleine nummertjes in vakken kunnen wegstrepen
+	-- Opslaan van files niet laten overschrijven
+	-- Bij laden van files, error tonen als de file niet bestaat
+	-- (x,y) -> (y,x)
+	-- Niet altijd de hele sudoku hertekenen, nergens voor nodig
+	-- Bij een lege sudoku klopt de validatie van velden niet :P
+
 -------------------------------------------------------------------------------
 --                                  Constanten                               --
 -------------------------------------------------------------------------------
@@ -21,6 +29,8 @@ fieldSize = sudokuSize / 9
 -- De groottte van een blok van 3*3
 blockSize = sudokuSize / 3
 
+empty = [[[] | x <- [0..8]] | y <- [0..8]]
+
 -------------------------------------------------------------------------------
 --                                    Store                                  --
 -------------------------------------------------------------------------------
@@ -30,7 +40,8 @@ data Store = Store {
     sudoku :: Sudoku,
 	sudoku_solved :: Sudoku,
 	numberPressed :: Int,
-	wrongField :: (Int, Int)
+	wrongField :: (Int, Int),
+	error_label :: String
 }
 
 -- Zet de initial state van de store
@@ -39,7 +50,8 @@ startStore sud = Store {
     sudoku = sud,
 	sudoku_solved = recCheck (vsCheck) $ prep sud,
 	numberPressed = 0,
-	wrongField = (-1,-1)
+	wrongField = (-1,-1),
+	error_label = ""
 }
 
 -------------------------------------------------------------------------------		
@@ -54,8 +66,8 @@ processInput store@Store{sudoku = sudo, sudoku_solved = sudo_solv, numberPressed
 	| otherwise    = (store, [])
 	where
 		(sudo_ins, is_set) = setSquareWithSafety i num (sudo, sudo_solv) 
-		store' = store{sudoku = sudo_ins, numberPressed = 0, wrongField = (-1,-1)}
-		store_not_set = store{numberPressed = 0, wrongField = i}
+		store' = store{sudoku = sudo_ins, sudoku_solved = recCheck (vsCheck) $ prep sudo_ins, numberPressed = 0, wrongField = (-1,-1), error_label=""}
+		store_not_set = store{numberPressed = 0, wrongField = i, error_label=""}
 		o = [ScreenClear, DrawPicture $ drawSudoku store']
 		o_not_set = [ScreenClear, DrawPicture $ drawSudoku store_not_set]
 		f = hitField (x,y)
@@ -70,7 +82,7 @@ processInput store (KeyIn any)
 	-- | any == 'o' = applyFunction (solve) store
 	| any == 'r' = (store,[GraphPrompt ("Read sudoku", "filename")])
 	| any == 's' = (store,[GraphPrompt ("save as", "filename")])
-	| isNumber any = trace (show number) (store{numberPressed = number}, [ScreenClear, DrawPicture $ drawSudoku store{numberPressed = number}]) -- anders laat hij de selected niet zien :P
+	| isNumber any = trace (show number) (store{numberPressed = number, wrongField = (-1,-1), error_label=""}, [ScreenClear, DrawPicture $ drawSudoku store{numberPressed = number, wrongField = (-1,-1), error_label=""}]) -- anders laat hij de selected niet zien :P
 	| otherwise = (store, [])
 	where
 		number = read (any:"") :: Int
@@ -83,11 +95,13 @@ processInput store (Prompt ("Read sudoku", fileName))
 -- Het geval dat aangeroepen wordt als er een bestand ingeladen wordt	
 processInput store (File fileName (TXTFile contents)) 
 	| contents /= "" = (newStore, o)
-	| otherwise = (store, [])
+	| otherwise = (store_error, o_error)
 	where
 		newSudoku = readSudoku contents
-		newStore = Store{sudoku = newSudoku, sudoku_solved = recCheck (vsCheck) $ prep newSudoku, numberPressed = 0, wrongField = (-1,-1)}
+		newStore = Store{sudoku = newSudoku, sudoku_solved = recCheck (vsCheck) $ prep newSudoku, numberPressed = 0, wrongField = (-1,-1), error_label = ""}
 		o = [ScreenClear, DrawPicture $ drawSudoku newStore]
+		store_error = store{error_label="File is empty/does not exist"}
+		o_error = [ScreenClear, DrawPicture $ drawSudoku store_error]
 
 -- Het geval dat aangeroepen wordt als het saveprompt klaar is
 processInput store@Store{sudoku = sudo} (Prompt ("save as", nm)) = (store, [SaveFile nm (TXTFile saveText)])
@@ -118,7 +132,7 @@ applyFunction f store@Store{sudoku = sudo} = (store', o)
 
 -- Tekent de hele GUI
 drawSudoku :: Store -> Picture
-drawSudoku store@Store{sudoku = sudoku, numberPressed = num, wrongField = field} = Pictures $
+drawSudoku store@Store{sudoku = sudoku, numberPressed = num, wrongField = field, error_label = msg} = Pictures $
     (drawBackgrounds)
 	++ (drawWrong field)
     ++ (map (Line) [[(-halfSudokuSize + x * fieldSize, halfSudokuSize), (-halfSudokuSize + x * fieldSize, -halfSudokuSize)]| x <- [0..9]]) -- these are the vertical boardlines
@@ -126,6 +140,7 @@ drawSudoku store@Store{sudoku = sudoku, numberPressed = num, wrongField = field}
     ++ (drawNumbers sudoku 0)
 	++ drawStatusLine
 	++ (drawSelectedNumber num)
+	++ (drawError msg)
 
 -- Tekent de grijze achtergronden om de 3*3 velden in een sudoku te markeren
 -- roept drawSingleBackground aan met (x,y) locaties van een 3*3 blok
@@ -187,7 +202,12 @@ drawSelectedNumber num
 			msg           = Translate (-400) (-230) $ Scale 0.15 0.15 $ Text "Selected:" 
 			msg_number    = Translate (-300) (-230) $ Scale 0.15 0.15 $ Color red $ Text (show num)
 			msg_no_number = Translate (-300) (-230) $ Scale 0.15 0.15 $ Color red $ Text "None"
-		
+			
+drawError :: String -> [Picture]
+drawError "" = []
+drawError msg =
+	[ Translate (-400) (280) $ Scale 0.15 0.15 $ Color red $ Text "Error: ",
+	  Translate (-300) (280) $ Scale 0.15 0.15 $ Color red $ Text msg]
 -------------------------------------------------------------------------------		
 --                           Serializing sudokus                             --
 -------------------------------------------------------------------------------
@@ -229,6 +249,6 @@ readSudokuLine (x:xs)
 main :: IO ()
 main = installEventHandler "sudoku" processInput store startPic 10
     where 
-        store = startStore [[[]]]
+        store = startStore empty
         startPic = drawSudoku store
 		
