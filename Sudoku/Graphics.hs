@@ -15,8 +15,6 @@ data Store = Store {
 	numberPressed :: Int,
 	wrongField :: (Int, Int)
 }
-
-
 -- De grootte van het getekende bord
 sudokuSize = 400
 -- De grootte van een van de helften van het bord
@@ -35,6 +33,9 @@ startStore sud = Store {
 	wrongField = (-1,-1)
 }
 
+-------------------------------------------------------------------------------		
+--                                    Input                                  --
+-------------------------------------------------------------------------------
 -- Functie om input te verwerken
 processInput :: Store -> Input -> (Store,[Output])
 processInput store@Store{sudoku = sudo, sudoku_solved = sudo_solv, numberPressed = num} (MouseDown (x,y)) 
@@ -49,23 +50,27 @@ processInput store@Store{sudoku = sudo, sudoku_solved = sudo_solv, numberPressed
 		o_not_set = [ScreenClear, DrawPicture $ drawSudoku store_not_set]
 		f = hitField (x,y)
 		Just i = f
-		
+
+-- De functie die alle KeyIn events verwerkt
 processInput store (KeyIn any)
 	| any == 'h' = applyFunction (hsCheck) store
 	| any == 'v' = applyFunction (vsCheck) store
 	| any == 'n' = applyFunction (npCheck) store
 	| any == 'p' = applyFunction (prep) store
+	| any == 'o' = applyFunction (solve) store
 	| any == 'r' = (store,[GraphPrompt ("Read sudoku", "filename")])
 	| any == 's' = (store,[GraphPrompt ("save as", "filename")])
 	| isNumber any = trace (show number) (store{numberPressed = number}, [ScreenClear, DrawPicture $ drawSudoku store{numberPressed = number}]) -- anders laat hij de selected niet zien :P
 	| otherwise = (store, [])
 	where
 		number = read (any:"") :: Int
-		
+
+-- Het geval dat aangeroepen wordt op het moment dat het leesprompt klaar is
 processInput store (Prompt ("Read sudoku", fileName))
 	| fileName /= "" = (store, [ReadFile fileName (TXTFile "")])
 	| otherwise = (store, [])
-	
+
+-- Het geval dat aangeroepen wordt als er een bestand ingeladen wordt	
 processInput store (File fileName (TXTFile contents)) 
 	| contents /= "" = (newStore, o)
 	| otherwise = (store, [])
@@ -73,60 +78,49 @@ processInput store (File fileName (TXTFile contents))
 		newSudoku = readSudoku contents
 		newStore = Store{sudoku = newSudoku, sudoku_solved = recCheck (vsCheck) $ prep newSudoku, numberPressed = 0, wrongField = (-1,-1)}
 		o = [ScreenClear, DrawPicture $ drawSudoku newStore]
-		
+
+-- Het geval dat aangeroepen wordt als het saveprompt klaar is
 processInput store@Store{sudoku = sudo} (Prompt ("save as", nm)) = (store, [SaveFile nm (TXTFile saveText)])
 	where
 		saveText = serializeSudoku sudo
 		
--- Catch all case
+-- Catch all other cases
 processInput store _ = (store,[])
 
-serializeSudoku :: Sudoku -> String
-serializeSudoku sudo = foldl (++) "" [serializeSudokuLine x | x <- sudo]
-
-serializeSudokuLine :: [Square] -> String
-serializeSudokuLine [] = "\n"
-serializeSudokuLine (x:xs)
-	| length x == 1 = (show (x!!0)) ++ serializeSudokuLine xs
-	| otherwise = "." ++ serializeSudokuLine xs
-
-readSudoku :: String -> Sudoku
-readSudoku content = [readSudokuLine x | x <- (lines content)]
-
-readSudokuLine :: String -> [Square]
-readSudokuLine [] = []
-readSudokuLine (x:xs)
-	| isNumber x = [[number]] ++ readSudokuLine xs
-	| otherwise = [[]] ++ readSudokuLine xs
-	where
-		number = read (x:"") :: Int
 
 
 
+
+
+-- Functie om een functie toe te passen op een sudoku, gebruikt om bepaalde strategieen te testen op een sudoku
 applyFunction :: (Sudoku -> Sudoku) -> Store -> (Store, [Output])
 applyFunction f store@Store{sudoku = sudo} = (store', o)
 	where
 		store' = store{sudoku = (f sudo), wrongField = (-1,-1)}
 		o = [ScreenClear, DrawPicture $ drawSudoku store']
 
--- Deze functie werkt, misschien even bepalen wat 0,0 is, bovenin of onderin :>
--- Er staat nu een mooie hack om het om te draaien
--- Stiekem is het wel een beetje hardcoded :x
--- (x,y) coordinaten naar (row, column) dus NIET naar (x,y)
+-- Functie om een locatie op het scherm om te zetten naar een vakje (x,y) op het bord
+-- Misschien nog omzetten naar (y,x) omdat de solver daar ook mee werkt
+-- Returned Nothing als er niets geraakt wordt, anders Just (x,y)
 hitField :: (Float, Float) -> Maybe (Int, Int)
 hitField (x,y) 
     | x >= -halfSudokuSize && x <= halfSudokuSize && y >= -halfSudokuSize && y <= halfSudokuSize = Just ((floor ((x+halfSudokuSize) / fieldSize)),(8 - floor ((y+halfSudokuSize) / fieldSize)))
     | otherwise = Nothing
 
+-- Tekent een zwarte lijn van een (x,y) locatie naar een (x1,y2) locatie
 drawLineFromTo :: (Float, Float) -> (Float, Float) -> Picture
 drawLineFromTo  (x1, y1) (x2, y2) = Color black $ Line [(x1, y1), (x2, y2)]
 
+-- Tekent de grijze achtergronden om de 3*3 velden in een sudoku te markeren
+-- roept drawSingleBackground aan met (x,y) locaties van een 3*3 blok
 drawBackgrounds :: [Picture]
 drawBackgrounds = (map drawSingleBackground [(-1,-1), (-1,1), (1,-1), (1,1), (0,0)])
 
+-- Tekent een grijze achtergrond achter een enkel 3*3 vlak
 drawSingleBackground :: (Float, Float) -> Picture
 drawSingleBackground (xPos, yPos) = translate (xPos * blockSize) (yPos * blockSize) $ Color (greyN 0.9) $ rectangleSolid blockSize blockSize
 
+-- Tekent de hele GUI
 drawSudoku :: Store -> Picture
 drawSudoku store@Store{sudoku = sudoku, numberPressed = num, wrongField = field} = Pictures $
     (drawBackgrounds)
@@ -136,11 +130,13 @@ drawSudoku store@Store{sudoku = sudoku, numberPressed = num, wrongField = field}
     ++ (drawNumbers sudoku 0)
 	++ drawStatusLine
 	++ (drawSelectedNumber num)
-  
+ 
+-- Tekent de nummers van een sudoku
 drawNumbers :: Sudoku -> Float -> [Picture]
 drawNumbers [] _ = []
 drawNumbers (x:xs) row = (drawLine x (0,row)) ++ (drawNumbers xs (row+1))
 
+-- Tekent een enkele regel van een sudoku
 drawLine :: [Square] -> (Float, Float) ->  [Picture]
 drawLine [] _ = []
 drawLine (x:xs) (col, row)
@@ -150,6 +146,7 @@ drawLine (x:xs) (col, row)
 										Text $ show (x !! 0)]  ++ (drawLine xs (col+1, row))
     | otherwise = [(Translate (-1 * halfSudokuSize + (col + 0.5) * fieldSize) (halfSudokuSize - (row + 0.5) * fieldSize) $ Pictures $ drawMultipleOption x (0, 0))] ++ (drawLine xs (col+1, row))
 
+-- Tekent een vakje waarin meerdere mogelijkheden zijn
 drawMultipleOption :: Square -> (Int, Int) -> [Picture]
 drawMultipleOption [] _ = []
 drawMultipleOption g (x,y)
@@ -163,6 +160,7 @@ drawMultipleOption g (x,y)
 		xnext = (toIndex + 1) `mod` 3
 		ynext = (toIndex + 1) `div` 3
 
+-- Tekent een string met welk cijfer geselecteerd is om te plaatsen
 drawSelectedNumber :: Int -> [Picture]
 drawSelectedNumber num
 		| num /= 0 = [msg, msg_number]
@@ -171,21 +169,54 @@ drawSelectedNumber num
 			msg           = Translate (-400) (-230) $ Scale 0.15 0.15 $ Text "Selected:" 
 			msg_number    = Translate (-300) (-230) $ Scale 0.15 0.15 $ Color red $ Text (show num)
 			msg_no_number = Translate (-300) (-230) $ Scale 0.15 0.15 $ Color red $ Text "None"
-		
+
+-- Tekent onderaan het scherm de mogelijke knoppen
 drawStatusLine :: [Picture]
 drawStatusLine = 
 	[	Translate (-400) (-260) $ Scale 0.15 0.15 $ Text "Input:",
 		Translate (-300) (-260) $ Scale 0.15 0.15 $ Text "[r]ead [s]ave",
 		Translate (-400) (-290) $ Scale 0.15 0.15 $ Text "Solving:",
-		Translate (-300) (-290) $ Scale 0.15 0.15 $ Text "[p]repare [n]akedPair [h]iddenSingle [v]isibleSingle"]
-		
+		Translate (-300) (-290) $ Scale 0.15 0.15 $ Text "s[o]lve [p]repare [n]akedPair [h]iddenSingle [v]isibleSingle"]
+
+-- Kleur een vakje waarin de gebruiker een verkeerd cijfer probeerde te zetten		
 drawWrong :: (Int, Int) -> [Picture]
 drawWrong (-1,-1) = []
 drawWrong (x,y) = [Translate (-1 * halfSudokuSize + ((fromIntegral x) + 0.5) * fieldSize) (halfSudokuSize - ((fromIntegral y) + 0.5) * fieldSize) $ Color red $ rectangleSolid fieldSize fieldSize]
 
+-- De functie die de eventhandler installeerd zodat we ook input kunnen verwerken :)
 doSudoku :: Sudoku ->  IO ()
 doSudoku sud = installEventHandler "sudoku" processInput store startPic 10
     where 
         store = startStore sud
         startPic = drawSudoku store
-   
+		
+-------------------------------------------------------------------------------		
+--                           Serializing sudokus                             --
+-------------------------------------------------------------------------------
+-- Functie om een sudoku te vertalen naar een string
+serializeSudoku :: Sudoku -> String
+serializeSudoku sudo = foldl (++) "" [serializeSudokuLine x | x <- sudo]
+
+-- Functie om een regel van een sudoku om te zetten in een string
+serializeSudokuLine :: [Square] -> String
+serializeSudokuLine [] = "\n"
+serializeSudokuLine (x:xs)
+	| length x == 1 = (show (x!!0)) ++ serializeSudokuLine xs
+	| otherwise = "." ++ serializeSudokuLine xs
+
+
+-------------------------------------------------------------------------------		
+--                          Deserializing sudokus                            --
+-------------------------------------------------------------------------------
+-- Functie om een sudoku te deserializen vanuit een file
+readSudoku :: String -> Sudoku
+readSudoku content = [readSudokuLine x | x <- (lines content)]
+
+-- Functie om een enkele lijn vanuit een bestand om te zetten in een array van vakjes
+readSudokuLine :: String -> [Square]
+readSudokuLine [] = []
+readSudokuLine (x:xs)
+	| isNumber x = [[number]] ++ readSudokuLine xs
+	| otherwise = [[]] ++ readSudokuLine xs
+	where
+		number = read (x:"") :: Int
