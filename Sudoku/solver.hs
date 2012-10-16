@@ -91,6 +91,11 @@ mudiff :: [Int] -> [Int] -> [Int]
 mudiff x [y] = [y]
 mudiff x y = (y \\ x)
 
+
+listComprehension :: [Int] -> [[Int]]
+listComprehension [] =[]
+listComprehension (x:xs) = (map (\xs -> [x,xs]) xs) ++ listComprehension xs
+
 -- Returns list of single values
 getNumbers :: [Square] -> [Int]
 getNumbers ([x]:xs) = x : (getNumbers xs)
@@ -115,14 +120,19 @@ checkBlocks f sud = foldl checkBlockColumn sud [0..2]
 	where 
 		checkBlockColumn = (\sud y->(foldl (\sud x -> (setBlock (rowToBlock (f (blockToRow (getBlock x y sud)))) x y sud)) (sud) [0..2]))
 
-		
+--TODO lijst van functies
+solve :: Sudoku -> Sudoku
+solve sud
+	| second /= first = solve second
+	| third /= second = solve third
+	| fourth /= third = solve fourth
+	| otherwise = fourth
+	where 
+		first = recCheck vsCheck sud
+		second = recCheck hsCheck first
+		third = recCheck npCheck second
+		fourth = recCheck hpCheck third
 
-
-		
-		
-		
-		
-		
 -- VISIBLE SINGLES ALGORITHM
 
 vsCheck :: Sudoku -> Sudoku
@@ -149,8 +159,8 @@ filterHiddenSingles sq hs
 	| hasHiddenSingle = hiddenSingles
 	| otherwise = sq
 	where
-		hasHiddenSingle = not (hiddenSingles == [])
 		hiddenSingles = (intersect hs sq)
+		hasHiddenSingle = not (hiddenSingles == [])
 
 -- NAKED PAIR ALGORITHM
 
@@ -178,16 +188,36 @@ filterNakedPairs sq pairs numbers
 	| sq `elem` pairs = sq
 	| otherwise = mudiff numbers sq
 
-solve :: Sudoku -> Sudoku
-solve sud
-	| first == sud = sud
-	| second /= first = solve second
-	| third /= second = solve third
-	| otherwise = third
-	where 
-		first = recCheck vsCheck sud
-		second = recCheck hsCheck first
-		third = recCheck npCheck second
+-- HIDDEN PAIR ALGORITHM
 
+hpCheck :: Sudoku -> Sudoku
+hpCheck sud = checkSudoku (\row -> removeHiddenPairs row (filterHiddenPairs row)) sud
 
+getHiddenPairs :: [Square] -> [Int]
+getHiddenPairs row
+	| grouped == [] = []
+	| otherwise = duplicates
+	where
+		folded = foldl1 (++) row
+		grouped = filter (\x -> length x == 2) (Data.List.group (Data.List.sort folded))
+		duplicates = nub (foldl1 (++) grouped)
+
+filterHiddenPairs :: [Square] -> ([Square], [Square])
+filterHiddenPairs row
+	| pairs /= [] = (intersection, result)
+	| otherwise = ([], [])	
+	where
+		possiblePairs = getHiddenPairs row
+		intersection = map (intersect possiblePairs) row
+		pairs = (filter (\x -> length x ==2) (Data.List.group (Data.List.sort (filter (\x -> length x ==2) intersection))))
+		result = nub $ foldl1 (++) pairs
+		
+--removeHiddenPairs row (intersection, pairs)
+removeHiddenPairs :: [Square] -> ([Square],[Square]) -> [Square]
+removeHiddenPairs (x:xs) (_,[]) = (x:xs)
+removeHiddenPairs (x:xs) ([],_) = (x:xs)
+removeHiddenPairs [] _ = []
+removeHiddenPairs (x:xs) ((y:ys), pairs)
+	| y `elem` pairs = y : (removeHiddenPairs xs (ys, pairs))
+	| otherwise = x : (removeHiddenPairs xs (ys, pairs))
 
