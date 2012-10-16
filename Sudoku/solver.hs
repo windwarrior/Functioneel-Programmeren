@@ -29,16 +29,7 @@ getSquareAt (x,y) sud = sqr
 		row = getRow y sud
 		sqr = row !! x
 
---SETTERS
-{-
-setBlock :: Block -> Int -> Int -> Sudoku -> Sudoku
-setBlock block x y sud = ((fst firstRows) ++ middleRows ++ (snd lastRows))
-	where
-		firstRows = splitAt (3*x) sud
-		lastRows = splitAt 3 (snd firstRows)
-		rowsBegin = map (\x -> (splitAt (3*y) ((fst lastRows) !! x))) [0..2]
-		middleRows = map (\x -> ( fst (rowsBegin !! x)) ++ (block !! x) ++ (snd (splitAt 3 (snd (rowsBegin !! x))))) [0..2]
--}		
+--SETTERS	
 setSquare :: (Int, Int) -> Int -> Sudoku -> Sudoku
 setSquare (x,y) num sud = sudokuResult
 	where
@@ -47,13 +38,14 @@ setSquare (x,y) num sud = sudokuResult
 		rowResult = rowStart ++ [[num]] ++ (drop 1 rowEnd)
 		(columnsStart, columnsEnd) = splitAt y sud
 		sudokuResult = columnsStart ++ [rowResult] ++ (drop 1 columnsEnd)
+		
 -- GUI to solver functions
-
 setSquareWithSafety :: (Int, Int) -> Int -> (Sudoku, Sudoku) -> (Sudoku, Bool)
 setSquareWithSafety (x,y) num (sud_unsolved, sud_solved)
 	| num `elem` (getSquareAt (x,y) sud_solved) = (setSquare (x,y) num sud_unsolved, True)
 	| otherwise = (sud_unsolved, False)
 
+setBlock :: Block -> Int -> Int -> Sudoku -> Sudoku
 setBlock block x y sud = firstRows ++ newMiddleRows ++ lastRows
 	where
 		firstRows = take (3*x) sud
@@ -91,7 +83,6 @@ mudiff :: [Int] -> [Int] -> [Int]
 mudiff x [y] = [y]
 mudiff x y = (y \\ x)
 
-
 listComprehension :: [Int] -> [[Int]]
 listComprehension [] =[]
 listComprehension (x:xs) = (map (\xs -> [x,xs]) xs) ++ listComprehension xs
@@ -104,6 +95,7 @@ getNumbers [] = []
 
 -- CHECKERS
 
+--Checks sudoku recursively till no more changes are made by f
 recCheck :: (Sudoku -> Sudoku) -> Sudoku -> Sudoku
 recCheck f sud
 	| pass1 == pass2 = pass1
@@ -112,27 +104,34 @@ recCheck f sud
 		pass1 = f sud
 		pass2 = f pass1
 
+--Checks whole sudoku (columns, rows and blocks respectively) once with f
 checkSudoku :: ([Square] -> [Square]) -> Sudoku -> Sudoku
 checkSudoku f sud = (checkBlocks f) (map f (getColumns (map f (getColumns sud))))
 
+-- Checks every block with f
 checkBlocks :: ([Square] -> [Square]) -> Sudoku -> Sudoku
 checkBlocks f sud = foldl checkBlockColumn sud [0..2]
 	where 
-		checkBlockColumn = (\sud y->(foldl (\sud x -> (setBlock (rowToBlock (f (blockToRow (getBlock x y sud)))) x y sud)) (sud) [0..2]))
+		checkBlockColumn = (\sud y->(foldl (\sud x -> (setBlock (rowToBlock (f (blockToRow (getBlock x y sud)))) x y sud)) sud [0..2]))
 
---TODO lijst van functies
+-- Solving algorithms, uses functions till result stays the same
 solve :: Sudoku -> Sudoku
-solve sud
-	| second /= first = solve second
-	| third /= second = solve third
-	| fourth /= third = solve fourth
-	| otherwise = fourth
+solve sud = solveWith [
+	(recCheck vsCheck), 
+	(recCheck hsCheck), 
+	(recCheck npCheck), 
+	(recCheck hpCheck)
+	] 0 (prep sud)
+	
+solveWith :: [(Sudoku -> Sudoku)] -> Int -> Sudoku -> Sudoku
+solveWith functions i sud 
+	| i==n 					= sud --If hardest doesn't work return best effort
+	| checked /= sud 	= solveWith functions 0 checked --Use first algorithm after solving with harder one
+	| otherwise = solveWith functions (i+1) checked --If current algorithm doesn't work use harder one
 	where 
-		first = recCheck vsCheck sud
-		second = recCheck hsCheck first
-		third = recCheck npCheck second
-		fourth = recCheck hpCheck third
-
+		n = length functions
+		checked = (functions !! i) sud
+	
 -- VISIBLE SINGLES ALGORITHM
 
 vsCheck :: Sudoku -> Sudoku
