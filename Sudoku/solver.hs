@@ -39,20 +39,27 @@ setBlock block x y sud = ((fst firstRows) ++ middleRows ++ (snd lastRows))
 		rowsBegin = map (\x -> (splitAt (3*y) ((fst lastRows) !! x))) [0..2]
 		middleRows = map (\x -> ( fst (rowsBegin !! x)) ++ (block !! x) ++ (snd (splitAt 3 (snd (rowsBegin !! x))))) [0..2]
 -}		
-setSquare :: (Int, Int) -> Int -> Sudoku -> Sudoku
-setSquare (x,y) num sud = sudokuResult
+setSquare :: (Int, Int) -> Square -> Sudoku -> Sudoku
+setSquare (x,y) sq sud = sudokuResult
 	where
 		row = getRow y sud
 		(rowStart, rowEnd) = splitAt x row
-		rowResult = rowStart ++ [[num]] ++ (drop 1 rowEnd)
+		rowResult = rowStart ++ [sq] ++ (drop 1 rowEnd)
 		(columnsStart, columnsEnd) = splitAt y sud
 		sudokuResult = columnsStart ++ [rowResult] ++ (drop 1 columnsEnd)
 -- GUI to solver functions
 
 setSquareWithSafety :: (Int, Int) -> Int -> (Sudoku, Sudoku) -> (Sudoku, Bool)
 setSquareWithSafety (x,y) num (sud_unsolved, sud_solved)
-	| num `elem` (getSquareAt (x,y) sud_solved) = (setSquare (x,y) num sud_unsolved, True)
+	| num `elem` (getSquareAt (x,y) sud_solved) = (setSquare (x,y) [num] sud_unsolved, True)
 	| otherwise = (sud_unsolved, False)
+    
+setSmallSquare :: (Int, Int, Int) -> Sudoku -> Sudoku
+setSmallSquare (x, y, num) sud
+    | num `elem` square = setSquare (x,y) (square \\ [num]) sud
+    | otherwise = setSquare (x,y) (square ++ [num]) sud
+    where
+        square = getSquareAt (x,y) sud
 
 setBlock block x y sud = firstRows ++ newMiddleRows ++ lastRows
 	where
