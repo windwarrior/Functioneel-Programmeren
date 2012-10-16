@@ -41,6 +41,7 @@ data Store = Store {
 	sudoku_solved :: Sudoku,
 	numberPressed :: Int,
 	wrongField :: (Int, Int),
+    isDpressed :: Bool,
 	error_label :: String
 }
 
@@ -48,8 +49,9 @@ data Store = Store {
 startStore :: Sudoku -> Store
 startStore sud = Store {
     sudoku = sud,
-	sudoku_solved = recCheck (vsCheck) $ prep sud,
+	sudoku_solved = solve $ prep sud,
 	numberPressed = 0,
+    isDpressed = False,
 	wrongField = (-1,-1),
 	error_label = ""
 }
@@ -60,18 +62,23 @@ startStore sud = Store {
 
 -- Functie om input te verwerken
 processInput :: Store -> Input -> (Store,[Output])
-processInput store@Store{sudoku = sudo, sudoku_solved = sudo_solv, numberPressed = num} (MouseDown (x,y)) 
+processInput store@Store{sudoku = sudo, sudoku_solved = sudo_solv, numberPressed = num, isDpressed = isDpressed} (MouseDown (x,y)) 
 	| f /= Nothing && num /= 0 && is_set = (store', o)
 	| f /= Nothing && num /= 0 = (store_not_set, o_not_set)
+    | j /= Nothing && isDpressed = (store_smallnumber_toggled, o_smallnumber_toggled)
 	| otherwise    = (store, [])
 	where
-		(sudo_ins, is_set) = setSquareWithSafety i num (sudo, sudo_solv) 
-		store' = store{sudoku = sudo_ins, sudoku_solved = recCheck (vsCheck) $ prep sudo_ins, numberPressed = 0, wrongField = (-1,-1), error_label=""}
-		store_not_set = store{numberPressed = 0, wrongField = i, error_label=""}
-		o = [ScreenClear, DrawPicture $ drawSudoku store']
-		o_not_set = [ScreenClear, DrawPicture $ drawSudoku store_not_set]
-		f = hitField (x,y)
-		Just i = f
+        (sudo_ins, is_set) = setSquareWithSafety i num (sudo, sudo_solv) 
+        store' = store{sudoku = sudo_ins, sudoku_solved = solve $ prep sudo_ins, numberPressed = 0, wrongField = (-1,-1), error_label=""}
+        store_not_set = store{numberPressed = 0, wrongField = i, error_label=""}
+        o = [ScreenClear, DrawPicture $ drawSudoku store']
+        o_not_set = [ScreenClear, DrawPicture $ drawSudoku store_not_set]
+        f = hitField (x,y)
+        Just i = f
+        j = hitSmallField (x,y)
+        Just k = j
+        store_smallnumber_toggled = trace (show j) (store{sudoku = setSmallSquare k sudo, isDpressed = False, wrongField = (-1,-1), error_label=""})
+        o_smallnumber_toggled = [ScreenClear, DrawPicture $ drawSudoku store_smallnumber_toggled]
 
 -- De functie die alle KeyIn events verwerkt
 processInput store (KeyIn any)
@@ -80,10 +87,12 @@ processInput store (KeyIn any)
 	| any == 'n' = applyFunction (npCheck) store
 	| any == 'p' = applyFunction (prep) store
 	| any == 'o' = applyFunction (solve) store
+    | any == 'd' = (store{isDpressed = True}, [])
 	| any == 'r' = (store,[GraphPrompt ("Read sudoku", "filename")])
 	| any == 's' = (store,[GraphPrompt ("save as", "filename")])
 	| isNumber any = trace (show number) (store{numberPressed = number, wrongField = (-1,-1), error_label=""}, [ScreenClear, DrawPicture $ drawSudoku store{numberPressed = number, wrongField = (-1,-1), error_label=""}]) -- anders laat hij de selected niet zien :P
-	| otherwise = (store, [])
+    
+	| otherwise = (store, []) 
 	where
 		number = read (any:"") :: Int
 
@@ -98,10 +107,10 @@ processInput store (File fileName (TXTFile contents))
 	| otherwise = (store_error, o_error)
 	where
 		newSudoku = readSudoku contents
-		newStore = Store{sudoku = newSudoku, sudoku_solved = recCheck (vsCheck) $ prep newSudoku, numberPressed = 0, wrongField = (-1,-1), error_label = ""}
+		newStore = Store{sudoku = newSudoku, sudoku_solved = solve $ prep newSudoku, numberPressed = 0, wrongField = (-1,-1), error_label = "", isDpressed = False}
 		o = [ScreenClear, DrawPicture $ drawSudoku newStore]
 		store_error = store{error_label="File is empty/does not exist"}
-		o_error = [ScreenClear, DrawPicture $ drawSudoku store_error]
+		o_error = [ScreenClear, DrawPicture $ drawSudoku store_error]  -- Eigenlijk zou je een klein deel van de sudoku kunnen hertekenen, helaas blijkt dit vaak glitches op te leveren :(
 
 -- Het geval dat aangeroepen wordt als het saveprompt klaar is
 processInput store@Store{sudoku = sudo} (Prompt ("save as", nm)) = (store, [SaveFile nm (TXTFile saveText)])
@@ -118,6 +127,17 @@ hitField :: (Float, Float) -> Maybe (Int, Int)
 hitField (x,y) 
     | x >= -halfSudokuSize && x <= halfSudokuSize && y >= -halfSudokuSize && y <= halfSudokuSize = Just ((floor ((x+halfSudokuSize) / fieldSize)),(8 - floor ((y+halfSudokuSize) / fieldSize)))
     | otherwise = Nothing
+    
+hitSmallField :: (Float, Float) -> Maybe (Int, Int, Int)
+hitSmallField (x,y)
+    | x >= -halfSudokuSize && x <= halfSudokuSize && y >= -halfSudokuSize && y <= halfSudokuSize = Just (hf_x, hf_y, to_number)
+    | otherwise = Nothing
+    where
+        hf = hitField (x,y)
+        Just (hf_x, hf_y) = hf
+        (halfSizeX, halfSizeY) = ((floor ((x+halfSudokuSize) / (fieldSize/3))),(26 - floor ((y+halfSudokuSize) / (fieldSize/3))))
+        (squareIndexX, squareIndexY) = ((halfSizeX `mod` 3), (halfSizeY `mod` 3))
+        to_number = (squareIndexY * 3 + squareIndexX + 1)
 	
 -- Functie om een functie toe te passen op een sudoku, gebruikt om bepaalde strategieen te testen op een sudoku
 applyFunction :: (Sudoku -> Sudoku) -> Store -> (Store, [Output])
