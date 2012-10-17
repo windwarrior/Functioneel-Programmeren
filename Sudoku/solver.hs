@@ -9,7 +9,7 @@ type Square = [Int]
 type Block = [[Square]] -- Same as sudoku, different meaning
 
 -------------------------------------------------------------------------------        
---                                        Getters                                           --
+--                                Getters                                    --
 -------------------------------------------------------------------------------
 
 getRow :: Int -> Sudoku -> [Square]
@@ -32,7 +32,7 @@ getSquareAt (x,y) sud = sqr
         sqr = row !! x
 
 -------------------------------------------------------------------------------        
---                                        Setters                                           --
+--                                 Setters                                   --
 -------------------------------------------------------------------------------
 
 setSquare :: (Int, Int) -> Square -> Sudoku -> Sudoku
@@ -123,7 +123,7 @@ getNumbers (x:xs) = getNumbers xs
 getNumbers [] = []
 
 -------------------------------------------------------------------------------        
---                                     Checkers                                           --
+--                               Checkers                                    --
 -------------------------------------------------------------------------------
 
 --Checks sudoku recursively till no more changes are made by f
@@ -226,7 +226,7 @@ filterNakedPairs sq pairs numbers
     | otherwise = mudiff numbers sq
 
 -------------------------------------------------------------------------------        
---                             Hidden Pair Algorithm                                 --
+--                         Hidden Pair Algorithm                             --
 -------------------------------------------------------------------------------
 
 hpCheck :: Sudoku -> Sudoku

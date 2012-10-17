@@ -53,6 +53,13 @@ startStore sud = Store {
 -------------------------------------------------------------------------------
 
 -- Functie om input te verwerken
+{-
+    Deze functie heeft een aantal opties
+        - als er een cijfer geselecteerd is, dan kan een groot getal ingevuld worden in een sudoku
+            - Als dit gelukt is, wordt de sudoku upgedate, als het cijfer foutief is, dan mag deze niet geset worden
+        - als de 'd' toets getoggled is kan men kleine cijfers laten verschijnen, en wegstrepen
+            - Ald hiermee niet de juiste optie verwijderd word, dan kan de store geupdate worden
+-}
 processInput :: Store -> Input -> (Store,[Output])
 processInput store@Store{sudoku = sudo, sudoku_solved = sudo_solv, numberPressed = num, isDpressed = isDpressed} (MouseDown (x,y)) 
     | f /= Nothing && num /= 0 && is_set = (store', o)
@@ -62,18 +69,18 @@ processInput store@Store{sudoku = sudo, sudoku_solved = sudo_solv, numberPressed
     | otherwise    = (store, [])
     where
         (sudo_ins, is_set) = setSquareWithSafety i num (sudo, sudo_solv) 
-        store' = store{sudoku = sudo_ins, sudoku_solved = solve sudo_ins, numberPressed = 0, wrongField = (-1,-1), error_label=""}
-        store_not_set = store{numberPressed = 0, wrongField = i, error_label=""}
+        store' = store{sudoku = sudo_ins, sudoku_solved = solve sudo_ins, numberPressed = 0, wrongField = (-1,-1), error_label -- Als het setten van een vakje gelukt is
         o = [ScreenClear, DrawPicture $ drawSudoku store']
+        store_not_set = store{numberPressed = 0, wrongField = i, error_label=""} -- Als het setten van een vakje een fout opleverde
         o_not_set = [ScreenClear, DrawPicture $ drawSudoku store_not_set]
         f = hitField (x,y)
         Just i = f
         j = hitSmallField (x,y)
         Just (xLoc, yLoc, smallnum) = j
         (sudoku_ins_small, is_small_added) = setSmallSquareWithSafety (xLoc, yLoc, smallnum) (sudo, sudo_solv)
-        store_smallnumber_toggled = (store{sudoku = sudoku_ins_small, sudoku_solved = solve sudoku_ins_small, isDpressed = False, wrongField = (-1,-1), error_label=""})
+        store_smallnumber_toggled = (store{sudoku = sudoku_ins_small, sudoku_solved = solve sudoku_ins_small, isDpressed = False, wrongField = (-1,-1), error_label=""}) -- Als het setten van een klein vakje gelukt is
         o_smallnumber_toggled = [ScreenClear, DrawPicture $ drawSudoku store_smallnumber_toggled]
-        store_smallnumber_error = store{isDpressed = False, wrongField = (xLoc, yLoc)}
+        store_smallnumber_error = store{isDpressed = False, error_label = "", wrongField = (xLoc, yLoc)} -- Als het setten van een klein vakje een fout opleverde
         o_smallnumber_error = [ScreenClear, DrawPicture $ drawSudoku store_smallnumber_error]
 
 -- De functie die alle KeyIn events verwerkt
