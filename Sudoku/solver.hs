@@ -54,12 +54,22 @@ setSquareWithSafety (x,y) num (sud_unsolved, sud_solved)
 	| num `elem` (getSquareAt (x,y) sud_solved) = (setSquare (x,y) [num] sud_unsolved, True)
 	| otherwise = (sud_unsolved, False)
     
-setSmallSquare :: (Int, Int, Int) -> Sudoku -> Sudoku
-setSmallSquare (x, y, num) sud
-    | num `elem` square = setSquare (x,y) (square \\ [num]) sud
-    | otherwise = setSquare (x,y) (square ++ [num]) sud
+{-
+    Deze functie onderscheid drie gevallen
+    1) De gebruiker probeert een nummer toe te voegen, dat mag altijd :P 
+    2) In de opgeloste sudoku staat op een plek maar 1 cijfer, dus de gebruiker mag dat cijfer niet uit de vermoedens wegstrepen
+    3) In de opgeloste sudoku staan op een plek meerdere cijfers, dus de gebruiker weet blijkbaar meer dan wij
+
+-}
+setSmallSquareWithSafety :: (Int, Int, Int) -> (Sudoku, Sudoku) -> (Sudoku, Bool)
+setSmallSquareWithSafety (x,y,num) (sud, sud_solved)
+    | not (num `elem` square) = (setSquare (x,y) (square ++ [num]) sud, True)
+    | length square_solved == 1 && num /= square_solved !! 0 = (setSquare (x,y) (square \\ [num]) sud, True)
+    | length square_solved == 1 = (sud, False)
+    | otherwise = (setSquare (x,y) (square \\ [num]) sud, True)
     where
         square = getSquareAt (x,y) sud
+        square_solved = getSquareAt (x,y) sud_solved
 
 setBlock block x y sud = firstRows ++ newMiddleRows ++ lastRows
 	where
