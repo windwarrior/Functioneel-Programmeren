@@ -174,12 +174,3 @@ sprockell  prog  state  tick   =   State {dmem=dmem',regbank=regbank',pc=pc',cnd
 		 regbank' =  load (regbank,dmem) (loadInstr,fromaddr,toreg,imm,value,y)
 
 		 pc'      = next (pc,jmp,cjmp,instrnr,cnd)
-
-
-
-
-
-
-
-
-

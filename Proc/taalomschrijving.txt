@@ -1,0 +1,25 @@
+Taalomschrijving:
+
+[Variabelen]
+
+int var; 							//geeft default waarde aan var
+int var = [int/var2/expr];
+var = [int/var2/expr];  		//gegeven dat var bestaat
+
+[Statements]
+
+if(statement){
+	//code
+} else {
+	//code
+}
+
+[Repetition]
+
+while(statement){
+	//code
+} 
+
+for(int i; statement; inc i){
+	//code
+}
