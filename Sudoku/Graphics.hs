@@ -210,7 +210,7 @@ drawMultipleOption g (x,y)
 -- Tekent onderaan het scherm de mogelijke knoppen
 drawStatusLine :: [Picture]
 drawStatusLine = 
-    [    Translate (-400) (-260) $ Scale 0.12 0.12 $ Text "Input:",
+    [   Translate (-400) (-260) $ Scale 0.12 0.12 $ Text "Input:",
         Translate (-300) (-260) $ Scale 0.12 0.12 $ Text "[r]ead [s]ave",
         Translate (-400) (-290) $ Scale 0.12 0.12 $ Text "Solving:",
         Translate (-300) (-290) $ Scale 0.12 0.12 $ Text "s[o]lve [n]akedPair [h]iddenSingle [v]isibleSingle h[i]ddenPair [d]oodle "]
