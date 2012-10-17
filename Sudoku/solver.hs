@@ -53,7 +53,7 @@ setSquareWithSafety (x,y) num (sud_unsolved, sud_solved)
     
 {-
     Deze functie onderscheid drie gevallen
-    1) De gebruiker probeert een nummer toe te voegen, dat mag altijd :P 
+    1) De gebruiker probeert een nummer toe te voegen, dat mag altijd 
     2) In de opgeloste sudoku staat op een plek maar 1 cijfer, dus de gebruiker mag dat cijfer niet uit de vermoedens wegstrepen
     3) In de opgeloste sudoku staan op een plek meerdere cijfers, dus de gebruiker weet blijkbaar meer dan wij
 
@@ -87,7 +87,7 @@ setBlock block x y sud = firstRows ++ newMiddleRows ++ lastRows
 
 blockToRow :: Block -> [Square]
 blockToRow [] = []
-blockToRow block = foldl1 (++) block
+blockToRow block = concat block
 
 rowToBlock :: [Square] -> Block
 rowToBlock row = [(fst rowBegin), (fst rowEnd), (snd rowEnd)]
@@ -178,7 +178,7 @@ hsCheck :: Sudoku -> Sudoku
 hsCheck sud = checkSudoku removeHiddenSingles sud
 
 getHiddenSingles :: [Square] -> [Square]
-getHiddenSingles row = filter (\x -> length x == 1) (Data.List.group (Data.List.sort (foldl1 (++) row)))
+getHiddenSingles row = filter (\x -> length x == 1) (Data.List.group (Data.List.sort (concat row)))
 
 removeHiddenSingles :: [Square] -> [Square]
 removeHiddenSingles row 
@@ -186,7 +186,7 @@ removeHiddenSingles row
     | otherwise = map (\sq -> filterHiddenSingles sq hs) row
     where
         singles = (getHiddenSingles row)
-        hs = foldl1 (++) singles
+        hs = concat singles
 
 filterHiddenSingles :: Square -> [Int] -> Square
 filterHiddenSingles [x] _ = [x]
@@ -207,7 +207,7 @@ npCheck sud = checkSudoku (\row -> removeNakedPairs row) sud
 getNakedPairs :: [Square] -> [Square]
 getNakedPairs row 
     | pairsOfpairs == [] = []
-    | otherwise = nub (foldl1 (++) pairsOfpairs)
+    | otherwise = nub (concat pairsOfpairs)
     where
         pairs = (Data.List.group (Data.List.sort (filter (\x -> length x == 2) row)))
         pairsOfpairs = (filter (\x -> length x == 2) pairs)
@@ -218,7 +218,7 @@ removeNakedPairs row
     | otherwise = map (\x -> filterNakedPairs x pairs numbers) row
     where 
         pairs = getNakedPairs row
-        numbers = nub (foldl1 (++) pairs)
+        numbers = nub (concat pairs)
 
 filterNakedPairs :: Square -> [Square] -> [Int] -> Square
 filterNakedPairs sq pairs numbers 
@@ -237,9 +237,9 @@ getHiddenPairs row
     | grouped == [] = []
     | otherwise = duplicates
     where
-        folded = foldl1 (++) row
+        folded = concat row
         grouped = filter (\x -> length x == 2) (Data.List.group (Data.List.sort folded))
-        duplicates = nub (foldl1 (++) grouped)
+        duplicates = nub (concat grouped)
 
 filterHiddenPairs :: [Square] -> ([Square], [Square])
 filterHiddenPairs row
@@ -249,7 +249,7 @@ filterHiddenPairs row
         possiblePairs = getHiddenPairs row
         intersection = map (intersect possiblePairs) row
         pairs = (filter (\x -> length x ==2) (Data.List.group (Data.List.sort (filter (\x -> length x ==2) intersection))))
-        result = nub $ foldl1 (++) pairs
+        result = nub $ concat pairs
         
 --removeHiddenPairs row (intersection, pairs)
 removeHiddenPairs :: [Square] -> ([Square],[Square]) -> [Square]
