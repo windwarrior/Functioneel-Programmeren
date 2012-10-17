@@ -8,7 +8,9 @@ type Sudoku = [[Square]]
 type Square = [Int]
 type Block = [[Square]] -- Same as sudoku, different meaning
 
---GETTERS
+-------------------------------------------------------------------------------		
+--                                        Getters                                           --
+-------------------------------------------------------------------------------
 
 getRow :: Int -> Sudoku -> [Square]
 getRow y sud = sud !! y
@@ -29,7 +31,9 @@ getSquareAt (x,y) sud = sqr
 		row = getRow y sud
 		sqr = row !! x
 
---SETTERS	
+-------------------------------------------------------------------------------		
+--                                        Setters                                           --
+-------------------------------------------------------------------------------
 
 setSquare :: (Int, Int) -> Square -> Sudoku -> Sudoku
 setSquare (x,y) sq sud = sudokuResult
@@ -64,7 +68,9 @@ setBlock block x y sud = firstRows ++ newMiddleRows ++ lastRows
 		middleRowsEnd = map (drop (3*(y+1))) middleRows
 		newMiddleRows = map (\x -> (middleRowsBegin !! x) ++ (block !! x) ++ (middleRowsEnd !! x)) [0..2]
 
--- CONVERTORS
+-------------------------------------------------------------------------------		
+--                                     Convertors                                         --
+-------------------------------------------------------------------------------
 
 blockToRow :: Block -> [Square]
 blockToRow [] = []
@@ -77,7 +83,6 @@ rowToBlock row = [(fst rowBegin), (fst rowEnd), (snd rowEnd)]
 		rowEnd = splitAt 3 (snd rowBegin)
 
 --Prepares sudoku for solver
-
 prep :: Sudoku -> Sudoku
 prep sud = map prepRow sud
 
@@ -92,6 +97,8 @@ mudiff :: [Int] -> [Int] -> [Int]
 mudiff x [y] = [y]
 mudiff x y = (y \\ x)
 
+-- Makes every combinations of pairs  where x<y for every pair [x,y]
+-- Not used in implementation but comes in handy with harder algorithms
 listComprehension :: [Int] -> [[Int]]
 listComprehension [] =[]
 listComprehension (x:xs) = (map (\xs -> [x,xs]) xs) ++ listComprehension xs
@@ -102,7 +109,9 @@ getNumbers ([x]:xs) = x : (getNumbers xs)
 getNumbers (x:xs) = getNumbers xs
 getNumbers [] = []
 
--- CHECKERS
+-------------------------------------------------------------------------------		
+--                                     Checkers                                           --
+-------------------------------------------------------------------------------
 
 --Checks sudoku recursively till no more changes are made by f
 recCheck :: (Sudoku -> Sudoku) -> Sudoku -> Sudoku
@@ -141,12 +150,16 @@ solveWith functions i sud
 		n = length functions
 		checked = (functions !! i) sud
 	
--- VISIBLE SINGLES ALGORITHM
+-------------------------------------------------------------------------------		
+--                        Visibles Singles Algorithm                                 --
+-------------------------------------------------------------------------------
 
 vsCheck :: Sudoku -> Sudoku
 vsCheck sud = checkSudoku (\row -> map (mudiff (getNumbers row)) row) sud
 
--- HIDDEN SINGLES ALGORITHM
+-------------------------------------------------------------------------------		
+--                         Hidden Singles Algorithm                                 --
+-------------------------------------------------------------------------------
 
 hsCheck :: Sudoku -> Sudoku
 hsCheck sud = checkSudoku removeHiddenSingles sud
@@ -163,6 +176,7 @@ removeHiddenSingles row
 		hs = foldl1 (++) singles
 
 filterHiddenSingles :: Square -> [Int] -> Square
+filterHiddenSingles [x] _ = [x]
 filterHiddenSingles sq hs
 	| hasHiddenSingle = hiddenSingles
 	| otherwise = sq
@@ -170,7 +184,9 @@ filterHiddenSingles sq hs
 		hiddenSingles = (intersect hs sq)
 		hasHiddenSingle = not (hiddenSingles == [])
 
--- NAKED PAIR ALGORITHM
+-------------------------------------------------------------------------------		
+--                             Naked Pair Algorithm                                  --
+-------------------------------------------------------------------------------
 
 npCheck :: Sudoku -> Sudoku
 npCheck sud = checkSudoku (\row -> removeNakedPairs row) sud
@@ -196,7 +212,9 @@ filterNakedPairs sq pairs numbers
 	| sq `elem` pairs = sq
 	| otherwise = mudiff numbers sq
 
--- HIDDEN PAIR ALGORITHM
+-------------------------------------------------------------------------------		
+--                             Hidden Pair Algorithm                                 --
+-------------------------------------------------------------------------------
 
 hpCheck :: Sudoku -> Sudoku
 hpCheck sud = checkSudoku (\row -> removeHiddenPairs row (filterHiddenPairs row)) sud
