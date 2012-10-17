@@ -69,7 +69,7 @@ processInput store@Store{sudoku = sudo, sudoku_solved = sudo_solv, numberPressed
     | otherwise    = (store, [])
     where
         (sudo_ins, is_set) = setSquareWithSafety i num (sudo, sudo_solv) 
-        store' = store{sudoku = sudo_ins, sudoku_solved = solve sudo_ins, numberPressed = 0, wrongField = (-1,-1), error_label -- Als het setten van een vakje gelukt is
+        store' = store{sudoku = sudo_ins, sudoku_solved = solve sudo_ins, numberPressed = 0, wrongField = (-1,-1), error_label=""} -- Als het setten van een vakje gelukt is
         o = [ScreenClear, DrawPicture $ drawSudoku store']
         store_not_set = store{numberPressed = 0, wrongField = i, error_label=""} -- Als het setten van een vakje een fout opleverde
         o_not_set = [ScreenClear, DrawPicture $ drawSudoku store_not_set]
