@@ -3,8 +3,7 @@ data Statement =
 	if Expression [Statement] [Statement] |
 	while Expression [Statement]
 	
-type Program = 
-	[Statement]
+type Program = [Statement]
 	
 data Expression =
 	Var Char |
