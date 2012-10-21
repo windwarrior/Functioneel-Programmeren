@@ -3,17 +3,17 @@ import Sprockell
 import Data.List
 
 data Statement = 
-	Assign Expression Expression |	-- Hier moet op een of andere manier Var komen te staan, but ey
-	If Expression [Statement] [Statement] |
-	While Expression [Statement]
-	deriving (Eq,Show)
+    Assign Expression Expression |    -- Hier moet op een of andere manier Var komen te staan, but ey
+    If Expression [Statement] [Statement] |
+    While Expression [Statement]
+    deriving (Eq,Show)
 
 type Program = [Statement]
-	
+    
 data Expression =
-	Var Char |
-	Const Int |
-	N2 Op Expression Expression |
+    Var Char |
+    Const Int |
+    N2 Op Expression Expression |
     N1 Op Expression 
     deriving (Eq,Show)
     
@@ -26,8 +26,8 @@ data Op =
 -- LookupTable is een lijst van Variabeleletters met adresnummers
 type LookupTable = [(Char, Int)]
     
-{-	
-compile :: Statement -> [Asm]
+{-    
+compile :: Statement -> [Assembly]
 comp stat i j -- Stack Pointer
 
 compileP :: Program -> [Asm]
@@ -39,6 +39,12 @@ compileE (Var c) lt
     where
         freeAddr = getFreeAdress lt
 
+<<<<<<< HEAD
+=======
+compileE :: Expression -> [Assembly]
+
+compileP :: Program -> [Assembly]-}
+>>>>>>> 8fb20879a1f523c61ff6021173724312080b9b81
 
 getFreeAdress :: LookupTable -> Int
 getFreeAdress lt
