@@ -1,12 +1,13 @@
 import Prelude
 
 data Statement = 
-	Assign (Var Char) Expression |	
+	Assign Expression Expression |	-- Hier moet op een of andere manier Var komen te staan, but ey
 	If Expression [Statement] [Statement] |
 	While Expression [Statement]
 	
 type Program = 
 	[Statement]
+
 	
 data Expression =
 	Var Char |
@@ -16,7 +17,8 @@ data Expression =
     
 data Op =
     Plus |
-    Min
+    Min  |
+    Gt
     
 {-	
 compile :: Statement -> [Asm]
@@ -30,12 +32,12 @@ compileP :: Program -> [Asm]-}
 
 
 vierkeervier = [
-    (Assign 'a' 4),
-    (Assign 'b' 4),
-    (Assign 'r' 0),
-    (While ((Var 'b') > 0) [
-        (Assign (Var 'r') ((Var 'r') Plus (Var 'a'))),
-        (Assign (Var 'b') ((Var 'b') Min 1))])]
+    (Assign (Var 'a') (Const 4)),
+    (Assign (Var 'b') (Const 4)),
+    (Assign (Var 'r') (Const 0)),
+    (While (N2 Gt (Var 'b') (Const 0)) [
+        (Assign (Var 'r') (N2 Plus (Var 'r') (Var 'a'))),
+        (Assign (Var 'b') (N2 Min  (Var 'b') (Const 1)))])]
         
 
 
