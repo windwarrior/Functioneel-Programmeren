@@ -1,25 +1,19 @@
 Taalomschrijving:
 
-[Variabelen]
-
-int var; 							//geeft default waarde aan var
-int var = [int/var2/expr];
-var = [int/var2/expr];  		//gegeven dat var bestaat
-
-[Statements]
-
-if(statement){
-	//code
-} else {
-	//code
-}
-
-[Repetition]
-
-while(statement){
-	//code
-} 
-
-for(int i; statement; inc i){
-	//code
-}
+data Statement = 
+	Assign var Expression |
+	
+	if [Statement] [Statement] |
+	while Expression [Statement]
+	
+type Program = 
+	[Statement]
+	
+data Expression =
+	Var Char |
+	Const Int |
+	N2 Op Expression Expression |
+	N1 Op Expression Expression |
+	
+compile :: Statement -> [Asm]
+comp stat i j -- Stack Pointer
