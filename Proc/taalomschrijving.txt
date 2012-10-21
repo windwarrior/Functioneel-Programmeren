@@ -3,7 +3,7 @@ Taalomschrijving:
 data Statement = 
 	Assign var Expression |
 	
-	if [Statement] [Statement] |
+	if Expression [Statement] [Statement] |
 	while Expression [Statement]
 	
 type Program = 
