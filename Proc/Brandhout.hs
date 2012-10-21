@@ -38,7 +38,9 @@ compileE (Var c) lt
     | otherwise = error "Could not assign variable, main memory is full"
     where
         freeAddr = getFreeAdress lt
-
+compileE (N2 op e1 e2) lt = 
+     op (compileE e1 lt) (compileE e2 lt)
+        
 getFreeAdress :: LookupTable -> Int
 getFreeAdress lt
     | length lt < dmemsize = ([0..(dmemsize-1)] \\ [(snd x) | x <- lt]) !! 0
