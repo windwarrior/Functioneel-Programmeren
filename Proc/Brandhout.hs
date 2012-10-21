@@ -39,13 +39,6 @@ compileE (Var c) lt
     where
         freeAddr = getFreeAdress lt
 
-<<<<<<< HEAD
-=======
-compileE :: Expression -> [Assembly]
-
-compileP :: Program -> [Assembly]-}
->>>>>>> 8fb20879a1f523c61ff6021173724312080b9b81
-
 getFreeAdress :: LookupTable -> Int
 getFreeAdress lt
     | length lt < dmemsize = ([0..(dmemsize-1)] \\ [(snd x) | x <- lt]) !! 0
