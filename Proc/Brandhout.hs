@@ -6,21 +6,22 @@ data Statement =
 	Assign Expression Expression |	-- Hier moet op een of andere manier Var komen te staan, but ey
 	If Expression [Statement] [Statement] |
 	While Expression [Statement]
-	
-type Program = 
-	[Statement]
+	deriving (Eq,Show)
 
+type Program = [Statement]
 	
 data Expression =
 	Var Char |
 	Const Int |
 	N2 Op Expression Expression |
-	N1 Op Expression 
+    N1 Op Expression 
+    deriving (Eq,Show)
     
 data Op =
     Plus |
     Min  |
     GreaterThen
+    deriving (Eq,Show)
     
 -- LookupTable is een lijst van Variabeleletters met adresnummers
 type LookupTable = [(Char, Int)]
