@@ -1,34 +1,34 @@
 import Prelude
 
 data Statement = 
-	Assign Expression Expression |	-- Hier moet op een of andere manier Var komen te staan, but ey
-	If Expression [Statement] [Statement] |
-	While Expression [Statement]
-	deriving (Eq,Show)
+    Assign Expression Expression |    -- Hier moet op een of andere manier Var komen te staan, but ey
+    If Expression [Statement] [Statement] |
+    While Expression [Statement]
+    deriving (Eq,Show)
 
 type Program = [Statement]
-	
+    
 data Expression =
-	Var Char |
-	Const Int |
-	N2 Op Expression Expression |
-	N1 Op Expression Expression 
-	deriving (Eq,Show)
+    Var Char |
+    Const Int |
+    N2 Op Expression Expression |
+    N1 Op Expression Expression 
+    deriving (Eq,Show)
     
 data Op =
     Plus |
     Min  |
     Gt
-	deriving (Eq,Show)
+    deriving (Eq,Show)
     
-{-	
-compile :: Statement -> [Asm]
+{-    
+compile :: Statement -> [Assembly]
 comp stat i j -- Stack Pointer
 
 
-compileE :: Expression -> [Asm]
+compileE :: Expression -> [Assembly]
 
-compileP :: Program -> [Asm]-}
+compileP :: Program -> [Assembly]-}
 
 
 
