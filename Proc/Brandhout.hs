@@ -1,5 +1,3 @@
-Taalomschrijving:
-
 data Statement = 
 	Assign var Expression |	
 	if Expression [Statement] [Statement] |
