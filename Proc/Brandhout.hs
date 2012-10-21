@@ -4,6 +4,7 @@ data Statement =
 	Assign Expression Expression |	-- Hier moet op een of andere manier Var komen te staan, but ey
 	If Expression [Statement] [Statement] |
 	While Expression [Statement]
+	deriving (Eq,Show)
 
 type Program = [Statement]
 	
@@ -12,11 +13,13 @@ data Expression =
 	Const Int |
 	N2 Op Expression Expression |
 	N1 Op Expression Expression 
+	deriving (Eq,Show)
     
 data Op =
     Plus |
     Min  |
     Gt
+	deriving (Eq,Show)
     
 {-	
 compile :: Statement -> [Asm]
