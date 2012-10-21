@@ -1,6 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Sprockell where
+import Prelude
 
 {-------------------------------------------------------------
 |
