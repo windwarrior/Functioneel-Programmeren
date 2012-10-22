@@ -23,10 +23,21 @@ data Op =
     Min  |
     GreaterThen
     deriving (Eq,Show)
+
+
+data Store = {
+    lookup :: LookupTable,
+    stackBottom :: Int,
+    stackPointer :: Int
+}
     
 -- LookupTable is een lijst van Variabeleletters met adresnummers
 type LookupTable = [(Char, Int)]
-    
+
+
+
+compile :: Statement -> [Assembly]
+comp stat i j -- Stack Pointer
 
 compileE :: Expression -> LookupTable -> ([Assembly], LookupTable)
 compileE (Var c) lt 
@@ -46,13 +57,13 @@ getFreeAdress lt
         
 --compileE (Const i) lt = ([Store Imm i (getFreeAdress
 
-compileP :: (Program, LookupTable) -> [Assembly]
+compileP :: (Program, Store) -> [Assembly]
 compileP ([], lt) = [EndProg]
 
 {-
 Een expressie zorgt er altijd voor dat er een waarde in register 1 komt te staan
 -}
-compileP (((Assign (Var e) exp2):xs), lt) = asm ++ [Store (Addr 1) addr] ++ compileP (xs, finalLt)
+compileP (((Assign (Var e) exp2):xs), store@Store{lookup = lt}) = asm ++ [Store (Addr 1) addr] ++ compileP (xs, finalLt)
     where
         (asm, newLt) = compileE exp2 lt
         (addr, finalLt) = (getAddrOrFree e newLt)
@@ -61,8 +72,8 @@ compileP lt ((If exp1 st1 st2):xs) = [] ++ compileP lt (xs) -- Lijst later in te
 
 compileP lt ((While exp1 st1):xs) = [] ++ compileP lt (xs) -- Lijst later in te vullen
 -}
-getAddrOrFree :: Char -> LookupTable -> (Int, LookupTable)
-getAddrOrFree ch lt
+getAddrOrFree :: Char -> Store -> (Int, LookupTable)
+getAddrOrFree ch store@Store{lookup = lt}
     | ch `elem` [(fst x) | x <- lt] = (hitAddr, lt)
     | length lt < dmemsize = (notAddr, lt ++ [(ch, notAddr)])
     | otherwise = (-1, lt)
@@ -70,6 +81,9 @@ getAddrOrFree ch lt
     where
         hitAddr = [i | (c,i) <- lt, c == ch] !! 0
         notAddr = ([0..(dmemsize-1)] \\ [(snd x) | x <- lt]) !! 0
+
+initStore :: Store
+initStore = Store{lookup = [], stackBottom = 4, stackPointer = 4}
 
 vierkeervier = [
     (Assign (Var 'a') (Const 4)),
