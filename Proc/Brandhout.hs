@@ -25,13 +25,13 @@ data Op =
     deriving (Eq,Show)
 
 
-data Store = {
-    lookup :: LookupTable,
+data CompileStore = CompileStore {
+    lookupTable :: LookupTable,
     stackBottom :: Int,
     stackPointer :: Int
 }
     
--- LookupTable is een lijst van Variabeleletters met adresnummers
+-- lookupTableTable is een lijst van Variabeleletters met adresnummers
 type LookupTable = [(Char, Int)]
 
 
@@ -39,51 +39,47 @@ type LookupTable = [(Char, Int)]
 compile :: Statement -> [Assembly]
 comp stat i j -- Stack Pointer
 
-compileE :: Expression -> LookupTable -> ([Assembly], LookupTable)
-compileE (Var c) lt 
+compileP :: Program -> [Asm]
+-}
+compileE :: Expression -> CompileStore -> ([Assembly], CompileStore)
+{-compileE (Var c) lt 
     | freeAddr /= -1 = ([], lt ++ [(c, freeAddr)])
     | otherwise = error "Could not assign variable, main memory is full"
     where
-        freeAddr = getFreeAdress lt
-compileE (N2 op e1 e2) lt = 
-    N2 op (compileE e1 lt) (compileE e2 lt)
+        freeAddr = getAddrOrFree c lt-}
         
-getFreeAdress :: LookupTable -> Int
-getFreeAdress lt
-    | length lt < dmemsize = ([0..(dmemsize-1)] \\ [(snd x) | x <- lt]) !! 0
-    | otherwise = -1
-        
---compileE (Const c) lt = ([Load (Imm c) 1], lt)
+compileE (Const c) store = ([Load (Imm c) 1], store)
         
 --compileE (Const i) lt = ([Store Imm i (getFreeAdress
 
-compileP :: (Program, Store) -> [Assembly]
+compileP :: (Program, CompileStore) -> [Assembly]
 compileP ([], lt) = [EndProg]
 
 {-
 Een expressie zorgt er altijd voor dat er een waarde in register 1 komt te staan
 -}
-compileP (((Assign (Var e) exp2):xs), store@Store{lookup = lt}) = asm ++ [Store (Addr 1) addr] ++ compileP (xs, finalLt)
+compileP (((Assign (Var e) exp2):xs), store@CompileStore{lookupTable = lt}) = asm ++ [Store (Addr 1) addr] ++ compileP (xs, newerStore)
     where
-        (asm, newLt) = compileE exp2 lt
-        (addr, finalLt) = (getAddrOrFree e newLt)
+        (asm, newStore) = compileE exp2 store
+        (addr, newerStore) = (getAddrOrFree e newStore)
 {-        
 compileP lt ((If exp1 st1 st2):xs) = [] ++ compileP lt (xs) -- Lijst later in te vullen
 
 compileP lt ((While exp1 st1):xs) = [] ++ compileP lt (xs) -- Lijst later in te vullen
 -}
-getAddrOrFree :: Char -> Store -> (Int, LookupTable)
-getAddrOrFree ch store@Store{lookup = lt}
-    | ch `elem` [(fst x) | x <- lt] = (hitAddr, lt)
-    | length lt < dmemsize = (notAddr, lt ++ [(ch, notAddr)])
-    | otherwise = (-1, lt)
+getAddrOrFree :: Char -> CompileStore -> (Int, CompileStore)
+getAddrOrFree ch store@CompileStore{lookupTable = lt}
+    | ch `elem` [(fst x) | x <- lt] = (hitAddr, store)
+    | length lt < dmemsize = (notAddr, store{lookupTable = (lt ++ [(ch, notAddr)])})
+    | otherwise = (-1, store)
     
     where
         hitAddr = [i | (c,i) <- lt, c == ch] !! 0
         notAddr = ([0..(dmemsize-1)] \\ [(snd x) | x <- lt]) !! 0
+    
 
-initStore :: Store
-initStore = Store{lookup = [], stackBottom = 4, stackPointer = 4}   
+initStore :: CompileStore
+initStore = CompileStore{lookupTable = [], stackBottom = 4, stackPointer = 4}   
 
 vierkeervier = [
     (Assign (Var 'a') (Const 4)),
@@ -97,6 +93,5 @@ vierkeervier = [
 Assign (Var 'a') (Const 4)
 -> Een adress verkrijgen (dus bijv 0x0)
 -> 4 opslaan op dat adress
--> 'a' in de lookuptable zetten met dat adres
+-> 'a' in de lookupTabletable zetten met dat adres
 -}
-
