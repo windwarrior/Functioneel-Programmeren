@@ -1,3 +1,4 @@
+module Brandhout where
 import Prelude
 import Sprockell
 import Data.List
@@ -48,7 +49,12 @@ compileE :: Expression -> CompileStore -> ([Assembly], CompileStore)
     where
         freeAddr = getAddrOrFree c lt-}
         
-compileE (Const c) store = ([Load (Imm c) 1], store)
+compileE (Const c) store@CompileStore{stackPointer = sp} = ([Store (Imm c) sp], store{stackPointer = (sp + 1)})
+
+compileE (N2 Plus exp1 exp2) store@CompileStore{stackPointer = sp} = (asm1 ++ asm2 ++ [(Load (Addr sp) 1), (Load (Addr (sp+1)) 2), (Calc Add 1 2 1), (Store (Addr 1) sp)], store{stackPointer = (sp +1)})
+    where
+        (asm1, store1) = compileE exp1 store
+        (asm2, store2) = compileE exp2 store1
         
 --compileE (Const i) lt = ([Store Imm i (getFreeAdress
 
@@ -58,7 +64,7 @@ compileP ([], lt) = [EndProg]
 {-
 Een expressie zorgt er altijd voor dat er een waarde in register 1 komt te staan
 -}
-compileP (((Assign (Var e) exp2):xs), store@CompileStore{lookupTable = lt}) = asm ++ [Store (Addr 1) addr] ++ compileP (xs, newerStore)
+compileP (((Assign (Var e) exp2):xs), store@CompileStore{lookupTable = lt, stackPointer = sp}) = asm ++ [(Load (Addr sp) 1), (Store (Addr 1) addr)] ++ compileP (xs, newerStore)
     where
         (asm, newStore) = compileE exp2 store
         (addr, newerStore) = (getAddrOrFree e newStore)
@@ -68,14 +74,14 @@ compileP lt ((If exp1 st1 st2):xs) = [] ++ compileP lt (xs) -- Lijst later in te
 compileP lt ((While exp1 st1):xs) = [] ++ compileP lt (xs) -- Lijst later in te vullen
 -}
 getAddrOrFree :: Char -> CompileStore -> (Int, CompileStore)
-getAddrOrFree ch store@CompileStore{lookupTable = lt}
+getAddrOrFree ch store@CompileStore{lookupTable = lt, stackBottom = sb}
     | ch `elem` [(fst x) | x <- lt] = (hitAddr, store)
     | length lt < dmemsize = (notAddr, store{lookupTable = (lt ++ [(ch, notAddr)])})
     | otherwise = (-1, store)
     
     where
         hitAddr = [i | (c,i) <- lt, c == ch] !! 0
-        notAddr = ([0..(dmemsize-1)] \\ [(snd x) | x <- lt]) !! 0
+        notAddr = ([1..(dmemsize-sb-1)] \\ [(snd x) | x <- lt]) !! 0
     
 
 initStore :: CompileStore
