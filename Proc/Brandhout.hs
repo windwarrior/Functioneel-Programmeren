@@ -35,7 +35,7 @@ data Store = {
 type LookupTable = [(Char, Int)]
 
 
-
+{-    
 compile :: Statement -> [Assembly]
 comp stat i j -- Stack Pointer
 
@@ -83,7 +83,7 @@ getAddrOrFree ch store@Store{lookup = lt}
         notAddr = ([0..(dmemsize-1)] \\ [(snd x) | x <- lt]) !! 0
 
 initStore :: Store
-initStore = Store{lookup = [], stackBottom = 4, stackPointer = 4}
+initStore = Store{lookup = [], stackBottom = 4, stackPointer = 4}   
 
 vierkeervier = [
     (Assign (Var 'a') (Const 4)),
