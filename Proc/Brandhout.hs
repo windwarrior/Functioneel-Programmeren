@@ -27,6 +27,7 @@ data Op =
 
 data Store = {
     lookup :: LookupTable,
+    stackBottom :: Int,
     stackPointer :: Int
 }
     
@@ -78,7 +79,7 @@ getAddrOrFree ch store@Store{lookup = lt}
     
 
 initStore :: Store
-initStore = Store{lookup = [], stackPointer = 8}   
+initStore = Store{lookup = [], stackBottom = 4, stackPointer = 4}   
 
 vierkeervier = [
     (Assign (Var 'a') (Const 4)),
