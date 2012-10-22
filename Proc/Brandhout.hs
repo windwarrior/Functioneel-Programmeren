@@ -27,27 +27,22 @@ data Op =
 -- LookupTable is een lijst van Variabeleletters met adresnummers
 type LookupTable = [(Char, Int)]
     
-{-    
-compile :: Statement -> [Assembly]
-comp stat i j -- Stack Pointer
 
-compileP :: Program -> [Asm]
--}
 compileE :: Expression -> LookupTable -> ([Assembly], LookupTable)
-{-compileE (Var c) lt 
+compileE (Var c) lt 
     | freeAddr /= -1 = ([], lt ++ [(c, freeAddr)])
     | otherwise = error "Could not assign variable, main memory is full"
     where
         freeAddr = getFreeAdress lt
 compileE (N2 op e1 e2) lt = 
-     op (compileE e1 lt) (compileE e2 lt)
+    N2 op (compileE e1 lt) (compileE e2 lt)
         
 getFreeAdress :: LookupTable -> Int
 getFreeAdress lt
     | length lt < dmemsize = ([0..(dmemsize-1)] \\ [(snd x) | x <- lt]) !! 0
     | otherwise = -1
         
-compileE (Const c) lt = ([Load (Imm c) 1], lt)
+--compileE (Const c) lt = ([Load (Imm c) 1], lt)
         
 --compileE (Const i) lt = ([Store Imm i (getFreeAdress
 
