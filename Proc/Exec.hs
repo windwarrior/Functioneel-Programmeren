@@ -3,6 +3,8 @@
 module Exec where
 
 import Sprockell
+import Brandhout
+import Prelude
 
 data Tick = Tick
 	deriving (Eq,Show)
@@ -33,9 +35,9 @@ main = putStr . unlines . map show $ test testprog
 | - define your own output function.
 -----------------------------------}
 
-testprog = prog1
+testprog = compileP ([Assign (Var 'a') ((N2 Plus (N2 Plus (Const 4) (Const 7)) (Const 4)))], initStore)
 
-output prog (state@State{..}) = (regbank, pc, prog!!pc) -- , regbank!!2, regbank!!3)
+output prog (state@State{..}) = (dmem, regbank, pc, prog!!pc) -- , regbank!!2, regbank!!3)
 						-- Note: field names from the state
 						-- 	 are usable as variables
 
