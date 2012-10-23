@@ -81,6 +81,12 @@ compileP (((Assign (Var e) exp2):xs), store@CompileStore{lookupTable = lt, stack
     where
         (asm, newStore) = compileE exp2 store
         (addr, newerStore) = (getAddrOrFree e newStore)
+
+compileP (((If exp stat1 stat2):xs), store)
+    where
+        (asm, newStore) = compileE exp store
+        (asmif, ifStore) = compileP stat1 newStore
+        (asmelse, elseStore) = compileP stat2 newStore
 {-        
 compileP lt ((If exp1 st1 st2):xs) = [] ++ compileP lt (xs) -- Lijst later in te vullen
 
