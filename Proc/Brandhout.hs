@@ -48,19 +48,7 @@ data CompileStore = CompileStore {
 -- lookupTableTable is een lijst van Variabeleletters met adresnummers
 type LookupTable = [(Char, Int)]
 
-
-{-    
-compile :: Statement -> [Assembly]
-comp stat i j -- Stack Pointer
-
-compileP :: Program -> [Asm]
--}
 compileE :: Expression -> CompileStore -> ([Assembly], CompileStore)
-{-compileE (Var c) lt 
-    | freeAddr /= -1 = ([], lt ++ [(c, freeAddr)])
-    | otherwise = error "Could not assign variable, main memory is full"
-    where
-        freeAddr = getAddrOrFree c lt-}
         
 compileE (Const c) store@CompileStore{stackPointer = sp} = ([Store (Imm c) sp], store{stackPointer = (sp + 1)})
 
@@ -73,37 +61,30 @@ compileE (N1 op exp1 ) store@CompileStore{stackPointer = sp} = (asm1 ++ [(Load (
     where
         (asm1, store1) = compileE exp1 store
         
---compileE (Const i) lt = ([Store Imm i (getFreeAdress
 
 compileP :: Program -> CompileStore -> ([Assembly], CompileStore)
 compileP [] st = ([EndProg], st)
 
-{-
-Een expressie zorgt er altijd voor dat er een waarde in register 1 komt te staan
--}
-compileP ((Assign (Var e) exp2):xs)  store@CompileStore{lookupTable = lt, stackPointer = sp} = (asm ++ [(Load (Addr sp) 1), (Store (Addr 1) addr)] ++ (compileP xs newerStore), newerStore)
+compileP ((Assign (Var e) exp2):xs)  store@CompileStore{lookupTable = lt, stackPointer = sp} = (asm ++ [(Load (Addr sp) 1), (Store (Addr 1) addr)] ++ asmProg, finalStore)
     where
         (asm, newStore) = compileE exp2 store
         (addr, newerStore) = (getAddrOrFree e newStore)
+        (asmProg, finalStore) = compileP xs newerStore
 
-compileP ((While exp stats):xs) store = (asmExp ++ [(CJump 2), (Jump lenProg)] ++ asmStats ++ [(Jump (-(2 + lenProg + lenExp)))], newerStore)
+compileP ((While exp stats):xs) store = (asmExp ++ [(CJump 2), (Jump lenProg)] ++ asmStats ++ [(Jump (-(2 + lenProg + lenExp)))] ++ asmProg, finalStore)
     where
         (asmExp, newStore) = compileE exp store
         (asmStats, newerStore) = compileP stats newStore
         lenExp = length asmExp
         lenProg = length asmStats
-        
+        (asmProg, finalStore) = compileP xs newerStore
 
 {-compileP (((If exp stat1 stat2):xs), store)
     where
         (asm, newStore) = compileE exp store
         (asmif, ifStore) = compileP stat1 newStore
         (asmelse, elseStore) = compileP stat2 newStore-}
-{-        
-compileP lt ((If exp1 st1 st2):xs) = [] ++ compileP lt (xs) -- Lijst later in te vullen
 
-compileP lt ((While exp1 st1):xs) = [] ++ compileP lt (xs) -- Lijst later in te vullen
--}
 getAddrOrFree :: Char -> CompileStore -> (Int, CompileStore)
 getAddrOrFree ch store@CompileStore{lookupTable = lt, stackBottom = sb}
     | ch `elem` [(fst x) | x <- lt] = (hitAddr, store)
@@ -126,9 +107,3 @@ vierkeervier = [
         (Assign (Var 'r') (N2 OpAdd (Var 'r') (Var 'a'))),
         (Assign (Var 'b') (N2 OpSub  (Var 'b') (Const 1)))])]
         
-{-
-Assign (Var 'a') (Const 4)
--> Een adress verkrijgen (dus bijv 0x0)
--> 4 opslaan op dat adress
--> 'a' in de lookupTabletable zetten met dat adres
--}

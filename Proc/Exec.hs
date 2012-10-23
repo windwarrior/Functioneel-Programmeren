@@ -35,8 +35,8 @@ main = putStr . unlines . map show $ test testprog1
 | - define your own output function.
 -----------------------------------}
 
-testprog = compileP ([Assign (Var 'a') ((N2 OpAdd (N2 OpAdd (Const 4) (Const 7)) (Const 4)))], initStore)
-testprog1 = compileP ([Assign (Var 'a') ((N1 OpNot (Const 0)))], initStore)
+testprog = fst $ compileP [Assign (Var 'a') ((N2 OpAdd (N2 OpAdd (Const 4) (Const 7)) (Const 4)))] initStore
+testprog1 = fst $ compileP [Assign (Var 'a') ((N1 OpNot (Const 0)))] initStore
 
 output prog (state@State{..}) = (dmem, regbank, pc, prog!!pc) -- , regbank!!2, regbank!!3)
 						-- Note: field names from the state
