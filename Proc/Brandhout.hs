@@ -19,13 +19,12 @@ data Expression =
     N1 Op Expression 
     deriving (Eq,Show)
     
-data Op =
-    Plus |
-    Min  |
-    GreaterThen
+data Op = OpInt | OpEq | OpNEq | OpGt | OpLt | OpAnd | OpOr | OpNot | OpNoOp
     deriving (Eq,Show)
-
-
+    
+data OpInt = OpIncr | OpDecr | OpAdd | OpSub | OpMul | OpDiv | OpMod 
+    deriving (Eq,Show)
+    
 data CompileStore = CompileStore {
     lookupTable :: LookupTable,
     stackBottom :: Int,
@@ -51,7 +50,7 @@ compileE :: Expression -> CompileStore -> ([Assembly], CompileStore)
         
 compileE (Const c) store@CompileStore{stackPointer = sp} = ([Store (Imm c) sp], store{stackPointer = (sp + 1)})
 
-compileE (N2 Plus exp1 exp2) store@CompileStore{stackPointer = sp} = (asm1 ++ asm2 ++ [(Load (Addr sp) 1), (Load (Addr (sp+1)) 2), (Calc Add 1 2 1), (Store (Addr 1) sp)], store{stackPointer = (sp +1)})
+compileE (N2 OpAdd exp1 exp2) store@CompileStore{stackPointer = sp} = (asm1 ++ asm2 ++ [(Load (Addr sp) 1), (Load (Addr (sp+1)) 2), (Calc Add 1 2 1), (Store (Addr 1) sp)], store{stackPointer = (sp +1)})
     where
         (asm1, store1) = compileE exp1 store
         (asm2, store2) = compileE exp2 store1
@@ -91,9 +90,9 @@ vierkeervier = [
     (Assign (Var 'a') (Const 4)),
     (Assign (Var 'b') (Const 4)),
     (Assign (Var 'r') (Const 0)),
-    (While (N2 GreaterThen (Var 'b') (Const 0)) [
-        (Assign (Var 'r') (N2 Plus (Var 'r') (Var 'a'))),
-        (Assign (Var 'b') (N2 Min  (Var 'b') (Const 1)))])]
+    (While (N2 OpGt (Var 'b') (Const 0)) [
+        (Assign (Var 'r') (N2 OpAdd (Var 'r') (Var 'a'))),
+        (Assign (Var 'b') (N2 OpSub  (Var 'b') (Const 1)))])]
         
 {-
 Assign (Var 'a') (Const 4)
