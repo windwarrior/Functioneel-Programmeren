@@ -75,22 +75,30 @@ compileE (N1 op exp1 ) store@CompileStore{stackPointer = sp} = (asm1 ++ [(Load (
         
 --compileE (Const i) lt = ([Store Imm i (getFreeAdress
 
-compileP :: (Program, CompileStore) -> [Assembly]
-compileP ([], lt) = [EndProg]
+compileP :: Program -> CompileStore -> ([Assembly], CompileStore)
+compileP [] st = ([EndProg], st)
 
 {-
 Een expressie zorgt er altijd voor dat er een waarde in register 1 komt te staan
 -}
-compileP (((Assign (Var e) exp2):xs), store@CompileStore{lookupTable = lt, stackPointer = sp}) = asm ++ [(Load (Addr sp) 1), (Store (Addr 1) addr)] ++ compileP (xs, newerStore)
+compileP ((Assign (Var e) exp2):xs)  store@CompileStore{lookupTable = lt, stackPointer = sp} = (asm ++ [(Load (Addr sp) 1), (Store (Addr 1) addr)] ++ (compileP xs newerStore), newerStore)
     where
         (asm, newStore) = compileE exp2 store
         (addr, newerStore) = (getAddrOrFree e newStore)
 
-compileP (((If exp stat1 stat2):xs), store)
+compileP ((While exp stats):xs) store = (asmExp ++ [(CJump 2), (Jump lenProg)] ++ asmStats ++ [(Jump (-(2 + lenProg + lenExp)))], newerStore)
+    where
+        (asmExp, newStore) = compileE exp store
+        (asmStats, newerStore) = compileP stats newStore
+        lenExp = length asmExp
+        lenProg = length asmStats
+        
+
+{-compileP (((If exp stat1 stat2):xs), store)
     where
         (asm, newStore) = compileE exp store
         (asmif, ifStore) = compileP stat1 newStore
-        (asmelse, elseStore) = compileP stat2 newStore
+        (asmelse, elseStore) = compileP stat2 newStore-}
 {-        
 compileP lt ((If exp1 st1 st2):xs) = [] ++ compileP lt (xs) -- Lijst later in te vullen
 
