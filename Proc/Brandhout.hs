@@ -69,6 +69,10 @@ compileE (N2 op exp1 exp2) store@CompileStore{stackPointer = sp} = (asm1 ++ asm2
         (asm1, store1) = compileE exp1 store
         (asm2, store2) = compileE exp2 store1
         
+compileE (N1 op exp1 ) store@CompileStore{stackPointer = sp} = (asm1 ++ [(Load (Addr sp) 1), (Calc (opToOpCode op) 1 0 1), (Store (Addr 1) sp)], store{stackPointer = (sp)})
+    where
+        (asm1, store1) = compileE exp1 store
+        
 --compileE (Const i) lt = ([Store Imm i (getFreeAdress
 
 compileP :: (Program, CompileStore) -> [Assembly]

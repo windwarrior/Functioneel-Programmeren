@@ -21,10 +21,10 @@ exec prog state (i:is)
 
 
 test prog = output prog initstate
-          : exec testprog initstate clock
+          : exec testprog1 initstate clock
 
 
-main = putStr . unlines . map show $ test testprog
+main = putStr . unlines . map show $ test testprog1
 
 
 {-----------------------------------
@@ -36,6 +36,7 @@ main = putStr . unlines . map show $ test testprog
 -----------------------------------}
 
 testprog = compileP ([Assign (Var 'a') ((N2 OpAdd (N2 OpAdd (Const 4) (Const 7)) (Const 4)))], initStore)
+testprog1 = compileP ([Assign (Var 'a') ((N1 OpNot (Const 0)))], initStore)
 
 output prog (state@State{..}) = (dmem, regbank, pc, prog!!pc) -- , regbank!!2, regbank!!3)
 						-- Note: field names from the state
