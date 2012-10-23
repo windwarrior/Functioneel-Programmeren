@@ -48,6 +48,12 @@ data CompileStore = CompileStore {
 -- lookupTableTable is een lijst van Variabeleletters met adresnummers
 type LookupTable = [(Char, Int)]
 
+compile :: Program -> [Assembly]
+compile prog = compiled ++ [EndProg]
+    where
+        (compiled, store) = compileP prog initStore
+
+
 compileE :: Expression -> CompileStore -> ([Assembly], CompileStore)
         
 compileE (Const c) store@CompileStore{stackPointer = sp} = ([Store (Imm c) sp], store{stackPointer = (sp + 1)})
@@ -63,7 +69,7 @@ compileE (N1 op exp1 ) store@CompileStore{stackPointer = sp} = (asm1 ++ [(Load (
         
 
 compileP :: Program -> CompileStore -> ([Assembly], CompileStore)
-compileP [] st = ([EndProg], st)
+compileP [] st = ([], st)
 
 compileP ((Assign (Var e) exp2):xs)  store@CompileStore{lookupTable = lt, stackPointer = sp} = (asm ++ [(Load (Addr sp) 1), (Store (Addr 1) addr)] ++ asmProg, finalStore)
     where
@@ -71,7 +77,7 @@ compileP ((Assign (Var e) exp2):xs)  store@CompileStore{lookupTable = lt, stackP
         (addr, newerStore) = (getAddrOrFree e newStore)
         (asmProg, finalStore) = compileP xs newerStore
 
-compileP ((While exp stats):xs) store = (asmExp ++ [(CJump 2), (Jump lenProg)] ++ asmStats ++ [(Jump (-(2 + lenProg + lenExp)))] ++ asmProg, finalStore)
+compileP ((While exp stats):xs) store = (asmExp ++ [(CJump 2), (Jump (lenProg + 1))] ++ asmStats ++ [(Jump (-(2 + lenProg + lenExp)))] ++ asmProg, finalStore)
     where
         (asmExp, newStore) = compileE exp store
         (asmStats, newerStore) = compileP stats newStore
