@@ -19,11 +19,25 @@ data Expression =
     N1 Op Expression 
     deriving (Eq,Show)
     
-data Op = OpInt | OpEq | OpNEq | OpGt | OpLt | OpAnd | OpOr | OpNot | OpNoOp
+data Op = OpIncr | OpDecr | OpAdd | OpSub | OpMul | OpDiv | OpMod | OpEq | OpNEq | OpGt | OpLt | OpAnd | OpOr | OpNot | OpNoOp
     deriving (Eq,Show)
     
-data OpInt = OpIncr | OpDecr | OpAdd | OpSub | OpMul | OpDiv | OpMod 
-    deriving (Eq,Show)
+opToOpCode :: Op -> OpCode
+opToOpCode OpIncr = Incr
+opToOpCode OpDecr = Decr
+opToOpCode OpAdd = Add
+opToOpCode OpSub = Sub
+opToOpCode OpMul = Mul
+opToOpCode OpDiv = Div
+opToOpCode OpMod = Mod
+opToOpCode OpEq = Eq
+opToOpCode OpNEq = NEq
+opToOpCode OpGt = Gt
+opToOpCode OpLt = Lt
+opToOpCode OpAnd = And
+opToOpCode OpOr = Or
+opToOpCode OpNot = Not
+opToOpCode OpNoOp = NoOp
     
 data CompileStore = CompileStore {
     lookupTable :: LookupTable,
@@ -50,7 +64,7 @@ compileE :: Expression -> CompileStore -> ([Assembly], CompileStore)
         
 compileE (Const c) store@CompileStore{stackPointer = sp} = ([Store (Imm c) sp], store{stackPointer = (sp + 1)})
 
-compileE (N2 OpAdd exp1 exp2) store@CompileStore{stackPointer = sp} = (asm1 ++ asm2 ++ [(Load (Addr sp) 1), (Load (Addr (sp+1)) 2), (Calc Add 1 2 1), (Store (Addr 1) sp)], store{stackPointer = (sp +1)})
+compileE (N2 op exp1 exp2) store@CompileStore{stackPointer = sp} = (asm1 ++ asm2 ++ [(Load (Addr sp) 1), (Load (Addr (sp+1)) 2), (Calc (opToOpCode op) 1 2 1), (Store (Addr 1) sp)], store{stackPointer = (sp +1)})
     where
         (asm1, store1) = compileE exp1 store
         (asm2, store2) = compileE exp2 store1
