@@ -18,7 +18,7 @@ data Expression =
     N2 OpCode Expression Expression |
     N1 OpCode Expression 
     deriving (Eq,Show)
-    
+     
 data CompileStore = CompileStore {
     lookupTable :: LookupTable,
     stackBottom :: Int,
