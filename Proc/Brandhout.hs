@@ -15,29 +15,9 @@ type Program = [Statement]
 data Expression =
     Var Char |
     Const Int |
-    N2 Op Expression Expression |
-    N1 Op Expression 
+    N2 OpCode Expression Expression |
+    N1 OpCode Expression 
     deriving (Eq,Show)
-    
-data Op = OpIncr | OpDecr | OpAdd | OpSub | OpMul | OpDiv | OpMod | OpEq | OpNEq | OpGt | OpLt | OpAnd | OpOr | OpNot | OpNoOp
-    deriving (Eq,Show)
-    
-opToOpCode :: Op -> OpCode
-opToOpCode OpIncr = Incr
-opToOpCode OpDecr = Decr
-opToOpCode OpAdd = Add
-opToOpCode OpSub = Sub
-opToOpCode OpMul = Mul
-opToOpCode OpDiv = Div
-opToOpCode OpMod = Mod
-opToOpCode OpEq = Eq
-opToOpCode OpNEq = NEq
-opToOpCode OpGt = Gt
-opToOpCode OpLt = Lt
-opToOpCode OpAnd = And
-opToOpCode OpOr = Or
-opToOpCode OpNot = Not
-opToOpCode OpNoOp = NoOp
     
 data CompileStore = CompileStore {
     lookupTable :: LookupTable,
@@ -58,12 +38,12 @@ compileE :: Expression -> CompileStore -> ([Assembly], CompileStore)
         
 compileE (Const c) store@CompileStore{stackPointer = sp} = ([Store (Imm c) sp], store{stackPointer = (sp + 1)})
 
-compileE (N2 op exp1 exp2) store@CompileStore{stackPointer = sp} = (asm1 ++ asm2 ++ [(Load (Addr sp) 1), (Load (Addr (sp+1)) 2), (Calc (opToOpCode op) 1 2 1), (Store (Addr 1) sp)], store{stackPointer = (sp +1)})
+compileE (N2 op exp1 exp2) store@CompileStore{stackPointer = sp} = (asm1 ++ asm2 ++ [(Load (Addr sp) 1), (Load (Addr (sp+1)) 2), (Calc op 1 2 1), (Store (Addr 1) sp)], store{stackPointer = (sp +1)})
     where
         (asm1, store1) = compileE exp1 store
         (asm2, store2) = compileE exp2 store1
         
-compileE (N1 op exp1 ) store@CompileStore{stackPointer = sp} = (asm1 ++ [(Load (Addr sp) 1), (Calc (opToOpCode op) 1 0 1), (Store (Addr 1) sp)], store{stackPointer = (sp)})
+compileE (N1 op exp1 ) store@CompileStore{stackPointer = sp} = (asm1 ++ [(Load (Addr sp) 1), (Calc op 1 0 1), (Store (Addr 1) sp)], store{stackPointer = (sp)})
     where
         (asm1, store1) = compileE exp1 store
         
@@ -114,7 +94,7 @@ vierkeervier = [
     (Assign (Var 'a') (Const 4)),
     (Assign (Var 'b') (Const 4)),
     (Assign (Var 'r') (Const 0)),
-    (While (N2 OpGt (Var 'b') (Const 0)) [
-        (Assign (Var 'r') (N2 OpAdd (Var 'r') (Var 'a'))),
-        (Assign (Var 'b') (N2 OpSub  (Var 'b') (Const 1)))])]
+    (While (N2 Gt (Var 'b') (Const 0)) [
+        (Assign (Var 'r') (N2 Add (Var 'r') (Var 'a'))),
+        (Assign (Var 'b') (N2 Sub  (Var 'b') (Const 1)))])]
         
