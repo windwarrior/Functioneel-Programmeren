@@ -90,11 +90,11 @@ compileP ((While exp stats):xs) store = (asmExp ++ [(CJump 2), (Jump (lenProg + 
         lenProg = length asmStats
         (asmProg, finalStore) = compileP xs newerStore
 
-{-compileP (((If exp stat1 stat2):xs), store)
+compileP (((If exp stat1 stat2):xs), store)
     where
         (asm, newStore) = compileE exp store
         (asmif, ifStore) = compileP stat1 newStore
-        (asmelse, elseStore) = compileP stat2 newStore-}
+        (asmelse, elseStore) = compileP stat2 newStore
 
 getAddrOrFree :: Char -> CompileStore -> (Int, CompileStore)
 getAddrOrFree ch store@CompileStore{lookupTable = lt, stackBottom = sb}
