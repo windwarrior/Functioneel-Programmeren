@@ -13,10 +13,11 @@ import Debug.Trace
 data MyStore = MyStore
   { 
     myGraph :: Graph,
-    isEpressed :: Bool
+    isEpressed :: Bool,
+    isBpressed :: Bool
   }
 
-initPrac6 graph = MyStore {myGraph = graph, isEpressed = False}
+initPrac6 graph = MyStore {myGraph = graph, isEpressed = False, isBpressed = False}
 
 main = doGraph doPrac6 initPrac6 myGraph drawMypracBottomLine
 
@@ -34,6 +35,10 @@ doPrac6 myStore (KeyIn 'e') = (myStore', [])
     where
         myStore' = myStore{isEpressed = True}
 
+doPrac6 myStore (KeyIn 'b') = (myStore', [])
+    where
+        myStore' = myStore{isBpressed = True}
+
 doPrac6 myStore@MyStore{myGraph = graph, isEpressed = True} (MouseDown (x,y))
 	| n == Nothing = (myStore{isEpressed = False}, [])
 	| otherwise = (myStore', o)
@@ -44,6 +49,16 @@ doPrac6 myStore@MyStore{myGraph = graph, isEpressed = True} (MouseDown (x,y))
 		n = onNode (nodes graph) (x,y)
 		Just i = n
 
+doPrac6 myStore@MyStore{myGraph = graph, isBpressed = True} (MouseDown (x,y))
+	| n == Nothing = (myStore{isBpressed = False}, [])
+	| otherwise = (myStore', o)
+	where
+		graph' = (makeNeighboursBlue graph i)
+		myStore' = myStore{myGraph=graph' , isBpressed = False}
+		o = [DrawPicture $ drawGraph graph']
+		n = onNode (nodes graph) (x,y)
+		Just i = n        
+        
 doPrac6 myStore i = (myStore,[])
 
 redColorNode :: Graph -> (Char,Color,Point) -> Graph
