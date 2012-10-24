@@ -26,7 +26,7 @@ test prog = output prog initstate
           : exec prog initstate clock
 
 
-main = putStr . unlines . map show $ test testwhile
+main = putStr . unlines . map show $ test programma
 
 
 {-----------------------------------
@@ -37,6 +37,10 @@ main = putStr . unlines . map show $ test testwhile
 | - define your own output function.
 -----------------------------------}
 
+-- Hier de verwijzing aanpassen
+programma = testwhile
+
+-- Hier extra programmas definieren
 testprog = compile [Assign (Var 'a') ((N2 Add (N2 Add (Const 4) (Const 7)) (Const 4)))]
 testprog1 = compile [Assign (Var 'a') ((N1 Not (Const 0)))]
 testwhile = compile [
