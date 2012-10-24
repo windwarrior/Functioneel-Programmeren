@@ -67,6 +67,11 @@ compileE (N1 op exp1 ) store@CompileStore{stackPointer = sp} = (asm1 ++ [(Load (
     where
         (asm1, store1) = compileE exp1 store
         
+        
+compileE (Var ch) store@CompileStore{stackPointer = sp} = ([(Load (Addr addr) 1), (Store (Addr 1) sp)], newStore{stackPointer = sp + 1})
+    where
+        (addr, newStore) = getAddrOrFree ch store
+        
 
 compileP :: Program -> CompileStore -> ([Assembly], CompileStore)
 compileP [] st = ([], st)
