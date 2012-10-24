@@ -21,10 +21,10 @@ exec prog state (i:is)
 
 
 test prog = output prog initstate
-          : exec testprog1 initstate clock
+          : exec prog initstate clock
 
 
-main = putStr . unlines . map show $ test testprog1
+main = putStr . unlines . map show $ test testwhile
 
 
 {-----------------------------------
@@ -39,7 +39,7 @@ testprog = compile [Assign (Var 'a') ((N2 OpAdd (N2 OpAdd (Const 4) (Const 7)) (
 testprog1 = compile [Assign (Var 'a') ((N1 OpNot (Const 0)))]
 testwhile = compile [
         Assign (Var 'a') (Const 1),
-        While ((Var 'a') Eq 1) [Assign (Var 'a') (Const 0)],
+        While (N2 OpEq (Var 'a') (Const 1)) [Assign (Var 'a') (Const 0)],
         Assign (Var 'a') (Const 1)
     ]
 
