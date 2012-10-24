@@ -4,7 +4,6 @@ import Prelude
 import FPPrac.Graphics
 import FPPrac.Events
 import Graphics
-import Data.List
 
 import System.FilePath (splitPath, dropExtension)
 
@@ -14,11 +13,10 @@ import Debug.Trace
 data MyStore = MyStore
   { 
     myGraph :: Graph,
-	isBpressed :: Bool,
     isEpressed :: Bool
   }
 
-initPrac6 graph = MyStore {myGraph = graph, isEpressed = False, isBpressed = False}
+initPrac6 graph = MyStore {myGraph = graph, isEpressed = False}
 
 main = doGraph doPrac6 initPrac6 myGraph drawMypracBottomLine
 
@@ -36,16 +34,6 @@ doPrac6 myStore (KeyIn 'e') = (myStore', [])
     where
         myStore' = myStore{isEpressed = True}
 
-doPrac6 myStore (KeyIn 'b') = (myStore', [])
-    where
-        myStore' = myStore{isBpressed = True}
-
-doPrac6 myStore@MyStore{myGraph = graph} (KeyIn 'c') = (myStore', o)
-    where
-        graph' = trace "hey" graph{nodes = (clearColor (nodes graph))}
-        myStore' = myStore{myGraph = graph'}
-        o = [DrawPicture $ drawGraph graph']
-  
 doPrac6 myStore@MyStore{myGraph = graph, isEpressed = True} (MouseDown (x,y))
 	| n == Nothing = (myStore{isEpressed = False}, [])
 	| otherwise = (myStore', o)
@@ -56,31 +44,7 @@ doPrac6 myStore@MyStore{myGraph = graph, isEpressed = True} (MouseDown (x,y))
 		n = onNode (nodes graph) (x,y)
 		Just i = n
 
-doPrac6 myStore@MyStore{myGraph = graph, isBpressed = True} (MouseDown (x,y))
-	| n == Nothing = (myStore{isBpressed = False}, [])
-	| otherwise = (myStore', o)
-	where
-		graph' = (makeNeighboursBlue graph i)
-		myStore' = myStore{myGraph=graph' , isBpressed = False}
-		o = [DrawPicture $ drawGraph graph']
-		n = onNode (nodes graph) (x,y)
-		Just i = n
-       
-
-makeNeighboursBlue:: Graph-> (Char, Color, Point) -> Graph
-makeNeighboursBlue myGraph@Graph{nodes = nodes, directed = directed, edges = edges} nod = myGraph{nodes = (makeNeighboursBlueList directed edges nodes nod), directed = directed, edges = edges}
-
-makeNeighboursBlueList :: Bool -> [Edge] -> [(Char, Color, Point)] -> (Char, Color, Point) -> [(Char, Color, Point)]
-makeNeighboursBlueList _ [] nodes _ = nodes
-makeNeighboursBlueList directed ((ch1, ch2, col, n) :xs) nodes (ch, co, po)  --Find correct edges and call colorNeighbours
-	| ch1 == ch = makeNeighboursBlueList directed xs (blueColorNodeList nodes ch1) (ch, co, po)
-	| ch2 == ch && not(directed) = makeNeighboursBlueList directed xs (blueColorNodeList nodes ch2) (ch, co, po)
-	| otherwise = makeNeighboursBlueList directed xs nodes (ch, co, po)
-	
-blueColorNodeList :: [(Char,Color,Point)] -> Char -> [(Char,Color,Point)]
-blueColorNodeList ((ch, co, po):xs) ch1
-	| ch1 == ch = (ch, blue, po) : xs
-	| otherwise = (ch, co, po) : blueColorNodeList xs ch1
+doPrac6 myStore i = (myStore,[])
 
 redColorNode :: Graph -> (Char,Color,Point) -> Graph
 redColorNode myGraph@Graph{nodes = nodes} nod = myGraph{nodes = (redColorNodeList nodes nod)}
@@ -89,40 +53,27 @@ redColorNodeList :: [(Char,Color,Point)] -> (Char,Color,Point) -> [(Char,Color,P
 redColorNodeList (x:xs) (ch, co, po) 
 	| equal (ch, co, po) x = (ch, red, po) : xs
 	| otherwise = x : redColorNodeList xs (ch, co, po)
-    	
+
+makeNeighboursBlue:: Graph-> (Char, Color, Point) -> Graph
+makeNeighboursBlue myGraph@Graph{nodes = nodes, directed = directed, edges = edges} nod = myGraph{nodes = (makeNeighboursBlueList directed edges nodes nod), directed = directed, edges = edges}
+
+makeNeighboursBlueList :: Bool -> [Edge] -> [(Char, Color, Point)] -> (Char, Color, Point) -> [(Char, Color, Point)]
+makeNeighboursBlueList _ [] nodes _ = nodes
+makeNeighboursBlueList directed ((ch1, ch2, col, n) :xs) nodes (ch, co, po)  --Find correct edges and call colorNeighbours
+	| ch1 == ch = makeNeighboursBlueList directed xs (blueColorNodeList nodes ch2) (ch, co, po)
+	| ch2 == ch && not(directed) = makeNeighboursBlueList directed xs (blueColorNodeList nodes ch1) (ch, co, po)
+	| otherwise = makeNeighboursBlueList directed xs nodes (ch, co, po)
+	
+blueColorNodeList :: [(Char,Color,Point)] -> Char -> [(Char,Color,Point)]
+blueColorNodeList ((ch, co, po):xs) ch1
+	| ch1 == ch = (ch, blue, po) : xs
+	| otherwise = (ch, co, po) : blueColorNodeList xs ch1
+
 equal :: (Char, Color, Point) -> (Char, Color, Point) -> Bool
 equal (ch1, co1, po1) (ch2, co2, po2) = (ch1 == ch2) && (co1 == co2) && (po1 == po2)
 
-clearColor :: [(Char, Color, Point)] -> [(Char, Color, Point)]
-clearColor [] = []
-clearColor ((c, cl, p):xs) = (c, white, p):clearColor xs
-
-isCompleteGraph :: Graph -> Bool
-isCompleteGraph g = foldr (&&) True [hasEdge x y edgs | x <- nods, y <- (nods \\ (x:[]))]
-    where
-        nods = (nodes g)
-        edgs = (edges g)
-        
-hasEdge :: (Char, Color, Point) -> (Char, Color, Point) -> [(Char,Char,Color,Int)] -> Bool
-hasEdge _ _ [] = False
-hasEdge (ch1, c1, p1) (ch2, c2, p2) ((che1, che2, _, _):xs)
-    | ch1 == che1 && ch2 == che2 = True
-    | ch1 == che2 && ch2 == che1 = True
-    | otherwise = hasEdge (ch1, c1, p1) (ch2, c2, p2) xs
-
 testTrace :: String -> Bool
 testTrace s = trace s True
-
-{-
-isConnected :: [(Char, Color, Point)] -> [(Char,Char,Color,Int)] -> [(Char, Color, Point)] -> Bool
-isConnected nodes edges visited = -}
-
---De buren van een node zijn alle nodes waartussen 1 edge ligt met de eerste node
--- Deze functie is hetzelfde als makeNeighboursBlue
-{-
-neighbours :: [(Char, Color, Point)] [(Char, Char, Color, Int] -> (Char, Color, Point) -> [(Char, Color, Point)]
-neighbours nodes edges (fromNode, _, _) = [(toNode, col1, cp1) | (toNode, col1, cp1) <- nodes, (edgeNode1, edgeNode2, _, _) <- edges, edgeNode1 == fromNode && edgeNode2 == toNode || edgeNode2 == fromNode && edgeNode1 == toNode] 
-        -}
 
 drawMypracBottomLine :: Graph -> Picture
 drawMypracBottomLine graph =
