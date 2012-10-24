@@ -18,7 +18,7 @@ data MyStore = MyStore
     isEpressed :: Bool
   }
 
-initPrac6 graph = MyStore {myGraph = graph, isEpressed = False}
+initPrac6 graph = MyStore {myGraph = graph, isEpressed = False, isBpressed = False}
 
 main = doGraph doPrac6 initPrac6 myGraph drawMypracBottomLine
 
