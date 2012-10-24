@@ -48,9 +48,9 @@ compileE (N1 op exp1 ) store@CompileStore{stackPointer = sp} = (asm1 ++ [(Load (
         (asm1, store1) = compileE exp1 store
         
         
-compileE (Var ch) store@CompileStore{stackPointer = sp} = ([(Load (Addr addr) 1), (Store (Addr 1) sp)], newStore{stackPointer = sp + 1})
+compileE (Var ch) store@CompileStore{stackPointer = sp} = ([(Load (Addr addr) 1), (Store (Addr 1) sp)], store{stackPointer = sp + 1})
     where
-        (addr, newStore) = getAddrOrFree ch store
+        addr = getAddr ch store
         
 
 compileP :: Program -> CompileStore -> ([Assembly], CompileStore)
@@ -70,6 +70,13 @@ compileP ((While exp stats):xs) store = (asmExp ++ [(CJump 2), (Jump (lenProg + 
         lenProg = length asmStats
         (asmProg, finalStore) = compileP xs newerStore
 
+        
+fixJump :: [Assembly] -> Int -> [Assembly]
+fixJump [] _ = []
+fixJump ((CJump i):xs) line = (CJump (line + i)) : fixJump xs (line+1)
+fixJump ((Jump i):xs) line = (Jump (line +i)) : fixJump xs (line+1)
+fixJump (x:xs) line = x : fixJump xs (line+1)
+
 {-compileP (((If exp stat1 stat2):xs), store)
     where
         (asm, newStore) = compileE exp store
@@ -85,6 +92,12 @@ getAddrOrFree ch store@CompileStore{lookupTable = lt, stackBottom = sb}
     where
         hitAddr = [i | (c,i) <- lt, c == ch] !! 0
         notAddr = ([1..(dmemsize-sb-1)] \\ [(snd x) | x <- lt]) !! 0
+        
+        
+getAddr :: Char -> CompileStore -> Int
+getAddr ch store@CompileStore{lookupTable = lt} 
+    | ch `elem` [(fst x) | x <- lt] =  [i | (c,i) <- lt, c == ch] !! 0
+    | otherwise = error ("Compile error, could not find initial assign of variable " ++ [ch])
     
 
 initStore :: CompileStore
