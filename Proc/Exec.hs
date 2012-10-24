@@ -36,7 +36,12 @@ main = putStr . unlines . map show $ test testprog1
 -----------------------------------}
 
 testprog = compile [Assign (Var 'a') ((N2 OpAdd (N2 OpAdd (Const 4) (Const 7)) (Const 4)))]
-testprog1 = compile [Assign (Var 'a') ((N1 OpNot (Const 0)))] 
+testprog1 = compile [Assign (Var 'a') ((N1 OpNot (Const 0)))]
+testwhile = compile [
+        Assign (Var 'a') (Const 1),
+        While ((Var 'a') Eq 1) [Assign (Var 'a') (Const 0)],
+        Assign (Var 'a') (Const 1)
+    ]
 
 output prog (state@State{..}) = (dmem, regbank, pc, prog!!pc) -- , regbank!!2, regbank!!3)
 						-- Note: field names from the state
