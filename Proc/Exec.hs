@@ -6,6 +6,8 @@ import Sprockell
 import Brandhout
 import Prelude
 
+import Debug.Trace
+
 data Tick = Tick
 	deriving (Eq,Show)
 
