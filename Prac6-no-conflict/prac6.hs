@@ -14,10 +14,11 @@ data MyStore = MyStore
   { 
     myGraph :: Graph,
     isEpressed :: Bool,
-    isBpressed :: Bool
+    isBpressed :: Bool,
+    isDpressed :: Bool
   }
 
-initPrac6 graph = MyStore {myGraph = graph, isEpressed = False, isBpressed = False}
+initPrac6 graph = MyStore {myGraph = graph, isEpressed = False, isBpressed = False, isDpressed = False}
 
 main = doGraph doPrac6 initPrac6 myGraph drawMypracBottomLine
 
@@ -30,14 +31,30 @@ doPrac6 :: MyStore -> Input -> (MyStore,[Output])
 --     myStore' = ...
 --     o        = ...
 --
+        
+
 
 doPrac6 myStore (KeyIn 'e') = (myStore', [])
     where
         myStore' = myStore{isEpressed = True}
-
+ 
 doPrac6 myStore (KeyIn 'b') = (myStore', [])
     where
         myStore' = myStore{isBpressed = True}
+
+doPrac6 myStore (KeyIn 'd') = (myStore', [])
+    where
+        myStore' = myStore{isDpressed = True}
+
+doPrac6 myStore@MyStore{myGraph = graph, isDpressed = True} (MouseDown (x,y))
+	| n == Nothing = (myStore{isDpressed = False}, [])
+	| otherwise = (myStore', o)
+	where
+		graph' = (makeBlackAndWhite graph i)
+		myStore' = myStore{myGraph=graph' , isDpressed = False}
+		o = [DrawPicture $ drawGraph graph']
+		n = onNode (nodes graph) (x,y)
+		Just i = n
 
 doPrac6 myStore@MyStore{myGraph = graph, isEpressed = True} (MouseDown (x,y))
 	| n == Nothing = (myStore{isEpressed = False}, [])
@@ -57,10 +74,14 @@ doPrac6 myStore@MyStore{myGraph = graph, isBpressed = True} (MouseDown (x,y))
 		myStore' = myStore{myGraph=graph' , isBpressed = False}
 		o = [DrawPicture $ drawGraph graph']
 		n = onNode (nodes graph) (x,y)
-		Just i = n        
+		Just i = n
+        
         
 doPrac6 myStore i = (myStore,[])
 
+        
+------------------------COLOR RED---------------------------
+        
 redColorNode :: Graph -> (Char,Color,Point) -> Graph
 redColorNode myGraph@Graph{nodes = nodes} nod = myGraph{nodes = (redColorNodeList nodes nod)}
 
@@ -68,6 +89,8 @@ redColorNodeList :: [(Char,Color,Point)] -> (Char,Color,Point) -> [(Char,Color,P
 redColorNodeList (x:xs) (ch, co, po) 
 	| equal (ch, co, po) x = (ch, red, po) : xs
 	| otherwise = x : redColorNodeList xs (ch, co, po)
+    
+-----------------------COLOR BLUE----------------------------------
 
 makeNeighboursBlue:: Graph-> (Char, Color, Point) -> Graph
 makeNeighboursBlue myGraph@Graph{nodes = nodes, directed = directed, edges = edges} nod = myGraph{nodes = (makeNeighboursBlueList directed edges nodes nod), directed = directed, edges = edges}
@@ -83,6 +106,22 @@ blueColorNodeList :: [(Char,Color,Point)] -> Char -> [(Char,Color,Point)]
 blueColorNodeList ((ch, co, po):xs) ch1
 	| ch1 == ch = (ch, blue, po) : xs
 	| otherwise = (ch, co, po) : blueColorNodeList xs ch1
+
+-----------------COLOR WHITE-------------------------------------
+
+makeBlackAndWhite:: Graph-> (Char, Color, Point) -> Graph
+makeBlackAndWhite myGraph@Graph{nodes = nodes, directed = directed, edges = edges} nod = myGraph{nodes = makeNodesWhite nodes, directed = directed, edges = makeEdgesBlack edges}
+
+makeNodesWhite :: [(Char, Color, Point)] -> [(Char, Color, Point)]
+makeNodesWhite [] = []
+makeNodesWhite ((ch, co, po):xs) = (ch, white, po) : (makeNodesWhite xs)
+
+makeEdgesBlack :: [Edge] -> [Edge]
+makeEdgesBlack [] =[]
+makeEdgesBlack ((ch1, ch2, col, n):xs) = (ch1, ch2, black, n) : (makeEdgesBlack xs)
+------------------------------------------------------------------
+
+
 
 equal :: (Char, Color, Point) -> (Char, Color, Point) -> Bool
 equal (ch1, co1, po1) (ch2, co2, po2) = (ch1 == ch2) && (co1 == co2) && (po1 == po2)
