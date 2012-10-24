@@ -62,7 +62,7 @@ compileP ((Assign (Var e) exp2):xs)  store@CompileStore{lookupTable = lt, stackP
         (addr, newerStore) = (getAddrOrFree e newStore)
         (asmProg, finalStore) = compileP xs newerStore
 
-compileP ((While exp stats):xs) store = (asmExp ++ [(CJump 2), (Jump (lenProg + 1))] ++ asmStats ++ [(Jump (-(2 + lenProg + lenExp)))] ++ asmProg, finalStore)
+compileP ((While exp stats):xs) store = (asmExp ++ [(CJump 2), (Jump (lenProg + 2))] ++ asmStats ++ [(Jump (-(2 + lenProg + lenExp)))] ++ asmProg, finalStore)
     where
         (asmExp, newStore) = compileE exp store
         (asmStats, newerStore) = compileP stats newStore
