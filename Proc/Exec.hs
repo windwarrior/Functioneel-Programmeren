@@ -5,7 +5,6 @@ module Exec where
 import Sprockell
 import Brandhout
 import Prelude
-import Debug.Trace
 
 data Tick = Tick
 	deriving (Eq,Show)
@@ -22,10 +21,10 @@ exec prog state (i:is)
 
 
 test prog = output prog initstate
-          : exec doProg initstate clock
+          : exec prog initstate clock
 
 
-main = putStr . unlines . map show $ test doProg
+main = putStr . unlines . map show $ test testwhile
 
 
 {-----------------------------------
@@ -35,7 +34,6 @@ main = putStr . unlines . map show $ test doProg
 | - choose the program that you want to simulate (testprog),
 | - define your own output function.
 -----------------------------------}
-doProg = testwhile
 
 testprog = compile [Assign (Var 'a') ((N2 OpAdd (N2 OpAdd (Const 4) (Const 7)) (Const 4)))]
 testprog1 = compile [Assign (Var 'a') ((N1 OpNot (Const 0)))]
@@ -44,14 +42,14 @@ testwhile = compile [
         While (N2 OpEq (Var 'a') (Const 1)) [Assign (Var 'a') (Const 0)],
         Assign (Var 'a') (Const 1)
     ]
-    
-printMore :: [Assembly] -> Int -> Char
-printMore [] i = ' '
-printMore (x:xs) i = trace ((show i) ++ " " ++ (show x)) (printMore xs (i+1))
 
 output prog (state@State{..}) = (dmem, regbank, pc, prog!!pc) -- , regbank!!2, regbank!!3)
 						-- Note: field names from the state
 						-- 	 are usable as variables
+
+printMore :: [Assembly] -> Int -> Char
+printMore [] i = ' '
+printMore (x:xs) i = trace ((show i) ++ " " ++ (show x)) (printMore xs (i+1))
 
 
 {-----------------------------------
