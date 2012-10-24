@@ -47,6 +47,10 @@ output prog (state@State{..}) = (dmem, regbank, pc, prog!!pc) -- , regbank!!2, r
 						-- Note: field names from the state
 						-- 	 are usable as variables
 
+printMore :: [Assembly] -> Int -> Char
+printMore [] i = ' '
+printMore (x:xs) i = trace ((show i) ++ " " ++ (show x)) (printMore xs (i+1))
+
 
 {-----------------------------------
 | Example 1
