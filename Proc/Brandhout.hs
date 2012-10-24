@@ -29,7 +29,7 @@ data CompileStore = CompileStore {
 type LookupTable = [(Char, Int)]
 
 compile :: Program -> [Assembly]
-compile prog = compiled ++ [EndProg]
+compile prog = fixJump (compiled ++ [EndProg]) 0
     where
         (compiled, store) = compileP prog initStore
 
