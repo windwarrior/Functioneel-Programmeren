@@ -45,6 +45,12 @@ doPrac6 myStore (KeyIn 'd') = (myStore', [])
     where
         myStore' = myStore{isDpressed = True}
 
+doPrac6 myStore@MyStore{myGraph = graph} (KeyIn 'f') = (myStore', o)
+	where
+		graph' = (kleur graph [red, green, blue])
+		myStore' = myStore{myGraph=graph'}
+		o = [DrawPicture $ drawGraph graph']
+
 doPrac6 myStore@MyStore{myGraph = graph, isDpressed = True} (MouseDown (x,y))
 	| n == Nothing = (myStore{isDpressed = False}, [])
 	| otherwise = (myStore', o)
@@ -152,11 +158,11 @@ isSamenhangend :: [Edge] -> [(Char, Color, Point)] -> Bool
 isSamenhangend edges ((ch, co, po):xs) = bereikbaar == nodes'
     where
         nodes' = sort (getCharsNodes ((ch, co, po):xs))
-        bereikbaar = sort (nub (getBereikbareNodes ch edges))
+        bereikbaar = sort (nub (getBereikbareNodes ch edges)) -- onnodig veel berekeningen om dat bij elke iteratie van getBereikbareNodes te doen
 
 getBereikbareNodes :: Char -> [Edge] -> [Char]
-getBereikbareNodes ch [] = []
-getBereikbareNodes ch edges = edge ++ (concat (map (\x -> getBereikbareNodes x unvisited) edge))
+getBereikbareNodes ch [] = [ch  ]
+getBereikbareNodes ch edges = ch : (edge ++ (concat (map (\x -> getBereikbareNodes x unvisited) edge)))
     where 
        buren = getNeighbours ch edges
        edge = concat (map (\(x,y) -> [x,y]) (getCharsEdges buren))
@@ -167,6 +173,31 @@ getNeighbours ch [] = []
 getNeighbours ch ((ch1, ch2, co, n):xs)
     | ch == ch1 || ch == ch2 = ((ch1, ch2, co, n) : (getNeighbours ch xs))
     | otherwise = getNeighbours ch xs
+
+------------------------------------------------------------------------------------------
+
+test = colorSubgraphs [] testNodes2c (getSubgrafen [] testNodes2c) [red,blue,green]
+
+kleur :: Graph -> [Color] -> Graph
+kleur myGraph@Graph{nodes = nodes, directed = directed, edges = edges} col 
+    = myGraph{nodes = nodes', directed = directed, edges = edges}
+    where
+        nodes' = (colorSubgraphs edges nodes (getSubgrafen edges nodes) col)
+    
+colorSubgraphs :: [Edge] -> [(Char, Color, Point)] -> [[Char]] -> [Color] -> [(Char, Color, Point)] 
+colorSubgraphs _ [] _ _ = []
+colorSubgraphs edges ((ch, co, po):xs) subgrafen colors = (ch, (colors !! i ), po): (colorSubgraphs edges xs subgrafen colors)
+    where
+        i = getSubgraphNumber ch subgrafen
+        
+getSubgraphNumber ch (x:xs)
+    | ch `elem` x = 0
+    | otherwise = 1 + getSubgraphNumber ch xs
+
+getSubgrafen edges nodes = grafen
+    where
+        nodes' = getCharsNodes nodes
+        grafen = nub (map (\x -> sort $ nub x) (map (\x -> getBereikbareNodes x edges) nodes'))
 
 ------------------------------------------------------------------------------------------
 equal :: (Char, Color, Point) -> (Char, Color, Point) -> Bool
@@ -195,3 +226,6 @@ drawMypracBottomLine graph =
 
 testNodes2a = [('a', red, (1,2)),('d', red, (1,2)),('c', red, (1,2)),('b', red, (1,2))] 
 testEdges2a = [('b', 'a', red,1),('a', 'd', red,1),('a', 'c', red,1),('d', 'b', red,1),('d', 'c', red,1),('c', 'b', red,1)]
+testEdges2b = [('b', 'a', red,1),('c', 'd', red,1)]
+
+testNodes2c = [('a', red, (3,4)),('b', red, (3,4)),('c', red, (3,4))]
