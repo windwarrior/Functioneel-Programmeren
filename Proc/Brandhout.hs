@@ -38,7 +38,7 @@ opToOpCode OpAnd = And
 opToOpCode OpOr = Or
 opToOpCode OpNot = Not
 opToOpCode OpNoOp = NoOp
-    
+    om 
 data CompileStore = CompileStore {
     lookupTable :: LookupTable,
     stackBottom :: Int,
