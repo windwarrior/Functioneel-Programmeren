@@ -4,6 +4,7 @@ import Prelude
 import FPPrac.Graphics
 import FPPrac.Events
 import Graphics
+import Data.List
 
 import System.FilePath (splitPath, dropExtension)
 
@@ -31,8 +32,6 @@ doPrac6 :: MyStore -> Input -> (MyStore,[Output])
 --     myStore' = ...
 --     o        = ...
 --
-        
-
 
 doPrac6 myStore (KeyIn 'e') = (myStore', [])
     where
@@ -76,7 +75,6 @@ doPrac6 myStore@MyStore{myGraph = graph, isBpressed = True} (MouseDown (x,y))
 		n = onNode (nodes graph) (x,y)
 		Just i = n
         
-        
 doPrac6 myStore i = (myStore,[])
 
         
@@ -119,10 +117,58 @@ makeNodesWhite ((ch, co, po):xs) = (ch, white, po) : (makeNodesWhite xs)
 makeEdgesBlack :: [Edge] -> [Edge]
 makeEdgesBlack [] =[]
 makeEdgesBlack ((ch1, ch2, col, n):xs) = (ch1, ch2, black, n) : (makeEdgesBlack xs)
+
 ------------------------------------------------------------------
 
+testVolledigeGraaf edges nodes = volledigeGraaf edges' nodes'
+    where
+        edges' = getCharsEdges edges 
+        nodes' = listComprehension (getCharsNodes nodes)
 
+volledigeGraaf :: [(Char, Char)] -> [(Char, Char)] -> Bool
+-- volledigeGraaf edges nodes
+volledigeGraaf [] [] = True
+volledigeGraaf [] _ = False
+volledigeGraaf _ [] = True
+volledigeGraaf edges ((ch1, ch2):xs)
+ | (ch1, ch2) `elem` edges = volledigeGraaf edges xs
+ | (ch2, ch1) `elem` edges = (volledigeGraaf edges xs)
+ | otherwise = False
 
+getCharsNodes :: [(Char,Color, Point)] -> [Char]
+getCharsNodes [] = []
+getCharsNodes ((ch, co, po):xs) = ch : (getCharsNodes xs)
+
+getCharsEdges :: [Edge] -> [(Char, Char)]
+getCharsEdges [] = []
+getCharsEdges ((ch1, ch2, co, n):xs) = (ch1, ch2) : (getCharsEdges xs)
+
+listComprehension (x:[]) = []
+listComprehension (x:xs) = [(i,j) | i <- [x], j <- xs] ++ listComprehension xs
+
+-------------------------------------------------------------------------------------------
+
+isSamenhangend :: [Edge] -> [(Char, Color, Point)] -> Bool
+isSamenhangend edges ((ch, co, po):xs) = bereikbaar == nodes'
+    where
+        nodes' = sort (getCharsNodes ((ch, co, po):xs))
+        bereikbaar = sort (nub (getBereikbareNodes ch edges))
+
+getBereikbareNodes :: Char -> [Edge] -> [Char]
+getBereikbareNodes ch [] = []
+getBereikbareNodes ch edges = edge ++ (concat (map (\x -> getBereikbareNodes x unvisited) edge))
+    where 
+       buren = getNeighbours ch edges
+       edge = concat (map (\(x,y) -> [x,y]) (getCharsEdges buren))
+       unvisited = edges \\ buren
+       
+getNeighbours :: Char -> [Edge] -> [Edge]
+getNeighbours ch [] = []
+getNeighbours ch ((ch1, ch2, co, n):xs)
+    | ch == ch1 || ch == ch2 = ((ch1, ch2, co, n) : (getNeighbours ch xs))
+    | otherwise = getNeighbours ch xs
+
+------------------------------------------------------------------------------------------
 equal :: (Char, Color, Point) -> (Char, Color, Point) -> Bool
 equal (ch1, co1, po1) (ch2, co2, po2) = (ch1 == ch2) && (co1 == co2) && (po1 == po2)
 
@@ -143,3 +189,9 @@ drawMypracBottomLine graph =
     where
       height1 = -300 + bottomLineHeight
       height2 = -300 + bottomTextHeight
+      
+------------------------------ TESTGRAPHS
+
+
+testNodes2a = [('a', red, (1,2)),('d', red, (1,2)),('c', red, (1,2)),('b', red, (1,2))] 
+testEdges2a = [('b', 'a', red,1),('a', 'd', red,1),('a', 'c', red,1),('d', 'b', red,1),('d', 'c', red,1),('c', 'b', red,1)]
