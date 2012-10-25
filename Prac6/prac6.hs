@@ -222,13 +222,45 @@ getNeighboursDirected ch ((ch1, ch2, co, n):xs)
 
 ------------------------------------------------------------------------------------------3b
 
-vindPadenVan a b edges visited = (buren, unvisited, onPath)
+vindPadenVan :: Char -> Char -> [Edge] -> [Char] -> [[Char]]
+vindPadenVan a b edges visited
+    | not(b `elem`visited) = map (a:) (concat (map (\x -> (vindPadenVan x b edges (visited ++ [x]))) onPath))
+    | otherwise = [b:""]
     where
         buren = (map (\(_, x, _, _) -> x) (getNeighboursDirected a edges)) 
         unvisited = buren \\ visited
         onPath = filter (\x -> kanNodeBereiken x b edges) unvisited
 
+charsToPath :: [Char] -> [Edge] -> [Edge]
+charsToPath [] _ = []
+charsToPath (ch:[]) _ = []
+charsToPath (ch:chars) edges = (getEdge ch1 ch2 edges) ++ (charsToPath chars edges)
+    where
+        ch1 = ch
+        ch2 = head chars
+
+getEdge :: Char -> Char -> [Edge] -> [Edge]
+getEdge _ _ [] = []
+getEdge ch1 ch2 ((ch3, ch4, co, n):xs)
+    | ch1 == ch3 && ch2 == ch4 = [(ch3,ch4,co,n)]
+    | otherwise = getEdge ch1 ch2 xs
+    
+------------------------------------------------------------------------------------------3c
+
+getWeight :: [Edge] -> Int
+getWeight [] = 0
+getWeight ((ch1, ch2, co, n):xs) = n + getWeight xs
+
+getSmallestPath c1 c2 edges = edgePaths !! i
+    where
+        paths = vindPadenVan c1 c2 edges (c1:"")
+        edgePaths = map  (\x -> charsToPath x edges) paths
+        weights = map getWeight (edgePaths)
+        smallestPath = head (sort weights)
+        indexSmallestPath = elemIndex smallestPath weights
+        Just i = indexSmallestPath
 ------------------------------------------------------------------------------------------
+
 equal :: (Char, Color, Point) -> (Char, Color, Point) -> Bool
 equal (ch1, co1, po1) (ch2, co2, po2) = (ch1 == ch2) && (co1 == co2) && (po1 == po2)
 
@@ -259,4 +291,4 @@ testEdges2b = [('b', 'a', red,1),('c', 'd', red,1)]
 
 testNodes2c = [('a', red, (3,4)),('b', red, (3,4)),('c', red, (3,4))]
 testEdges3a = [('a', 'b', red, 1),('a', 'c', red, 1), ('d', 'a', red, 1), ('c', 'd', red, 1)]
-testEdges3b = [('a', 'c', red, 1),('a', 'd', red, 1), ('a', 'e', red, 1), ('c', 'g', red, 1), ('c', 'b', red, 1), ('d', 'b', red, 1), ('e', 'b', red, 1),('e', 'f', red, 1), ('g', 'h', red, 1), ('a', 'i', red, 1), ('j', 'b', red, 1)]
+testEdges3b = [('z', 'a', red,1),('a', 'c', red, 1),('a', 'd', red, 1), ('a', 'e', red, 1), ('c', 'g', red, 1), ('c', 'b', red, 1), ('d', 'b', red, 1), ('f', 'b', red, 1),('e', 'f', red, 1), ('g', 'h', red, 1), ('a', 'i', red, 1), ('j', 'b', red, 1),('z', 'c', red, 1)]
