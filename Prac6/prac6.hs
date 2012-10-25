@@ -222,10 +222,6 @@ getNeighboursDirected ch ((ch1, ch2, co, n):xs)
 
 ------------------------------------------------------------------------------------------3b
 
-test2 = map getWeight test1
-test1 = map (\x -> charsToPath x testEdges3b) test
-test =   (vindPadenVan 'z' 'b' testEdges3b "z")
-
 vindPadenVan :: Char -> Char -> [Edge] -> [Char] -> [[Char]]
 vindPadenVan a b edges visited
     | not(b `elem`visited) = map (a:) (concat (map (\x -> (vindPadenVan x b edges (visited ++ [x]))) onPath))
@@ -255,6 +251,14 @@ getWeight :: [Edge] -> Int
 getWeight [] = 0
 getWeight ((ch1, ch2, co, n):xs) = n + getWeight xs
 
+getSmallestPath c1 c2 edges = edgePaths !! i
+    where
+        paths = vindPadenVan c1 c2 edges (c1:"")
+        edgePaths = map  (\x -> charsToPath x edges) paths
+        weights = map getWeight (edgePaths)
+        smallestPath = head (sort weights)
+        indexSmallestPath = elemIndex smallestPath weights
+        Just i = indexSmallestPath
 ------------------------------------------------------------------------------------------
 
 equal :: (Char, Color, Point) -> (Char, Color, Point) -> Bool
