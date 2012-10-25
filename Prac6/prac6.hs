@@ -4,6 +4,7 @@ import Prelude
 import FPPrac.Graphics
 import FPPrac.Events
 import Graphics
+import Data.List
 
 import System.FilePath (splitPath, dropExtension)
 
@@ -31,8 +32,6 @@ doPrac6 :: MyStore -> Input -> (MyStore,[Output])
 --     myStore' = ...
 --     o        = ...
 --
-        
-
 
 doPrac6 myStore (KeyIn 'e') = (myStore', [])
     where
@@ -45,6 +44,12 @@ doPrac6 myStore (KeyIn 'b') = (myStore', [])
 doPrac6 myStore (KeyIn 'd') = (myStore', [])
     where
         myStore' = myStore{isDpressed = True}
+
+doPrac6 myStore@MyStore{myGraph = graph} (KeyIn 'f') = (myStore', o)
+	where
+		graph' = (kleur graph [red, green, blue])
+		myStore' = myStore{myGraph=graph'}
+		o = [DrawPicture $ drawGraph graph']
 
 doPrac6 myStore@MyStore{myGraph = graph, isDpressed = True} (MouseDown (x,y))
 	| n == Nothing = (myStore{isDpressed = False}, [])
@@ -75,7 +80,6 @@ doPrac6 myStore@MyStore{myGraph = graph, isBpressed = True} (MouseDown (x,y))
 		o = [DrawPicture $ drawGraph graph']
 		n = onNode (nodes graph) (x,y)
 		Just i = n
-        
         
 doPrac6 myStore i = (myStore,[])
 
@@ -119,10 +123,112 @@ makeNodesWhite ((ch, co, po):xs) = (ch, white, po) : (makeNodesWhite xs)
 makeEdgesBlack :: [Edge] -> [Edge]
 makeEdgesBlack [] =[]
 makeEdgesBlack ((ch1, ch2, col, n):xs) = (ch1, ch2, black, n) : (makeEdgesBlack xs)
-------------------------------------------------------------------
 
+------------------------------------------------------------------2a
 
+testVolledigeGraaf edges nodes = volledigeGraaf edges' nodes'
+    where
+        edges' = getCharsEdges edges 
+        nodes' = listComprehension (getCharsNodes nodes)
 
+volledigeGraaf :: [(Char, Char)] -> [(Char, Char)] -> Bool
+-- volledigeGraaf edges nodes
+volledigeGraaf [] [] = True
+volledigeGraaf [] _ = False
+volledigeGraaf _ [] = True
+volledigeGraaf edges ((ch1, ch2):xs)
+ | (ch1, ch2) `elem` edges = volledigeGraaf edges xs
+ | (ch2, ch1) `elem` edges = (volledigeGraaf edges xs)
+ | otherwise = False
+
+getCharsNodes :: [(Char,Color, Point)] -> [Char]
+getCharsNodes [] = []
+getCharsNodes ((ch, co, po):xs) = ch : (getCharsNodes xs)
+
+getCharsEdges :: [Edge] -> [(Char, Char)]
+getCharsEdges [] = []
+getCharsEdges ((ch1, ch2, co, n):xs) = (ch1, ch2) : (getCharsEdges xs)
+
+listComprehension (x:[]) = []
+listComprehension (x:xs) = [(i,j) | i <- [x], j <- xs] ++ listComprehension xs
+
+-------------------------------------------------------------------------------------------2b
+
+isSamenhangend :: [Edge] -> [(Char, Color, Point)] -> Bool
+isSamenhangend edges ((ch, co, po):xs) = bereikbaar == nodes'
+    where
+        nodes' = sort (getCharsNodes ((ch, co, po):xs))
+        bereikbaar = sort (nub (getBereikbareNodes ch edges)) -- onnodig veel berekeningen om dat bij elke iteratie van getBereikbareNodes te doen
+
+getBereikbareNodes :: Char -> [Edge] -> [Char]
+getBereikbareNodes ch [] = [ch  ]
+getBereikbareNodes ch edges = ch : (edge ++ (concat (map (\x -> getBereikbareNodes x unvisited) edge)))
+    where 
+       buren = getNeighbours ch edges
+       edge = concat (map (\(x,y) -> [x,y]) (getCharsEdges buren))
+       unvisited = edges \\ buren
+       
+getNeighbours :: Char -> [Edge] -> [Edge]
+getNeighbours ch [] = []
+getNeighbours ch ((ch1, ch2, co, n):xs)
+    | ch == ch1 || ch == ch2 = ((ch1, ch2, co, n) : (getNeighbours ch xs))
+    | otherwise = getNeighbours ch xs
+
+------------------------------------------------------------------------------------------2c
+
+kleur :: Graph -> [Color] -> Graph
+kleur myGraph@Graph{nodes = nodes, directed = directed, edges = edges} col 
+    = myGraph{nodes = nodes', directed = directed, edges = edges}
+    where
+        nodes' = (colorSubgraphs edges nodes (getSubgrafen edges nodes) col)
+    
+colorSubgraphs :: [Edge] -> [(Char, Color, Point)] -> [[Char]] -> [Color] -> [(Char, Color, Point)] 
+colorSubgraphs _ [] _ _ = []
+colorSubgraphs edges ((ch, co, po):xs) subgrafen colors = (ch, (colors !! i ), po): (colorSubgraphs edges xs subgrafen colors)
+    where
+        i = getSubgraphNumber ch subgrafen
+
+getSubgraphNumber :: Char -> [[Char]] -> Int
+getSubgraphNumber ch (x:xs)
+    | ch `elem` x = 0
+    | otherwise = 1 + getSubgraphNumber ch xs
+
+getSubgrafen :: [Edge] -> [(Char, Color,Point)] -> [[Char]]
+getSubgrafen edges nodes = grafen
+    where
+        nodes' = getCharsNodes nodes
+        grafen = nub (map (\x -> sort $ nub x) (map (\x -> getBereikbareNodes x edges) nodes'))
+
+------------------------------------------------------------------------------------------3a
+
+kanNodeBereiken :: Char -> Char -> [Edge] -> Bool
+kanNodeBereiken a b edges = b `elem` bereikbaar
+    where 
+        bereikbaar = sort (nub (getBereikbareNodesDirected a edges))
+
+getBereikbareNodesDirected :: Char -> [Edge] -> [Char]
+getBereikbareNodesDirected ch [] = [ch  ]
+getBereikbareNodesDirected ch edges = ch : (edge ++ (concat (map (\x -> getBereikbareNodesDirected x unvisited) edge)))
+    where 
+       buren = getNeighboursDirected ch edges
+       edge = concat (map (\(x,y) -> [x,y]) (getCharsEdges buren))
+       unvisited = edges \\ buren
+       
+getNeighboursDirected :: Char -> [Edge] -> [Edge]
+getNeighboursDirected ch [] = []
+getNeighboursDirected ch ((ch1, ch2, co, n):xs)
+    | ch == ch1 = ((ch1, ch2, co, n) : (getNeighbours ch xs))
+    | otherwise = getNeighboursDirected ch xs
+
+------------------------------------------------------------------------------------------3b
+
+vindPadenVan a b edges visited = (buren, unvisited, onPath)
+    where
+        buren = (map (\(_, x, _, _) -> x) (getNeighboursDirected a edges)) 
+        unvisited = buren \\ visited
+        onPath = filter (\x -> kanNodeBereiken x b edges) unvisited
+
+------------------------------------------------------------------------------------------
 equal :: (Char, Color, Point) -> (Char, Color, Point) -> Bool
 equal (ch1, co1, po1) (ch2, co2, po2) = (ch1 == ch2) && (co1 == co2) && (po1 == po2)
 
@@ -143,3 +249,14 @@ drawMypracBottomLine graph =
     where
       height1 = -300 + bottomLineHeight
       height2 = -300 + bottomTextHeight
+      
+------------------------------ TESTGRAPHS
+
+
+testNodes2a = [('a', red, (1,2)),('d', red, (1,2)),('c', red, (1,2)),('b', red, (1,2))] 
+testEdges2a = [('b', 'a', red,1),('a', 'd', red,1),('a', 'c', red,1),('d', 'b', red,1),('d', 'c', red,1),('c', 'b', red,1)]
+testEdges2b = [('b', 'a', red,1),('c', 'd', red,1)]
+
+testNodes2c = [('a', red, (3,4)),('b', red, (3,4)),('c', red, (3,4))]
+testEdges3a = [('a', 'b', red, 1),('a', 'c', red, 1), ('d', 'a', red, 1), ('c', 'd', red, 1)]
+testEdges3b = [('a', 'c', red, 1),('a', 'd', red, 1), ('a', 'e', red, 1), ('c', 'g', red, 1), ('c', 'b', red, 1), ('d', 'b', red, 1), ('e', 'b', red, 1),('e', 'f', red, 1), ('g', 'h', red, 1), ('a', 'i', red, 1), ('j', 'b', red, 1)]
