@@ -245,13 +245,17 @@ getEdge ch1 ch2 ((ch3, ch4, co, n):xs)
     | ch1 == ch3 && ch2 == ch4 = [(ch3,ch4,co,n)]
     | otherwise = getEdge ch1 ch2 xs
     
+    
+colorEdgesRed :: [Edge] -> [Edge]
+colorEdgesRed ((ch1, ch2, co, n):xs) = (ch1, ch2, red, n):(colorEdgesRed xs)
 ------------------------------------------------------------------------------------------3c
 
 getWeight :: [Edge] -> Int
 getWeight [] = 0
 getWeight ((ch1, ch2, co, n):xs) = n + getWeight xs
 
-getSmallestPath c1 c2 edges = edgePaths !! i
+getSmallestPath :: Char -> Char -> [Edge] -> ([Char], Int, [Edge])
+getSmallestPath c1 c2 edges = ((paths !! i), smallestPath, (edgePaths !! i))
     where
         paths = vindPadenVan c1 c2 edges (c1:"")
         edgePaths = map  (\x -> charsToPath x edges) paths

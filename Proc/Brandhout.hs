@@ -47,7 +47,6 @@ compileE (N1 op exp1 ) store@CompileStore{stackPointer = sp, stackBottom = sb} =
     where
         (asm1, store1) = compileE exp1 store
         
-        
 compileE (Var ch) store@CompileStore{stackPointer = sp, stackBottom = sb} = ([(Load (Addr addr) 1), (Store (Addr 1) sp)], store{stackPointer = (incStackPointer sb sp 1)})
     where
         addr = getAddr ch store
@@ -85,14 +84,11 @@ fixJump ((CJump i):xs) line = (CJump (line + i)) : fixJump xs (line+1)
 fixJump ((Jump i):xs) line = (Jump (line +i)) : fixJump xs (line+1)
 fixJump (x:xs) line = x : fixJump xs (line+1)
 
-
-
 getAddrOrFree :: Char -> CompileStore -> (Int, CompileStore)
 getAddrOrFree ch store@CompileStore{lookupTable = lt, stackBottom = sb}
     | ch `elem` [(fst x) | x <- lt] = (hitAddr, store)
     | length lt < dmemsize = (notAddr, store{lookupTable = (lt ++ [(ch, notAddr)])})
     | otherwise = (-1, store)
-    
     where
         hitAddr = [i | (c,i) <- lt, c == ch] !! 0
         notAddr = ([1..(dmemsize-sb-1)] \\ [(snd x) | x <- lt]) !! 0
