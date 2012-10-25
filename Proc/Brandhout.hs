@@ -36,19 +36,19 @@ compile prog = fixJump (compiled ++ [EndProg]) 0
 
 compileE :: Expression -> CompileStore -> ([Assembly], CompileStore)
         
-compileE (Const c) store@CompileStore{stackPointer = sp} = ([Store (Imm c) sp], store{stackPointer = (sp + 1)})
+compileE (Const c) store@CompileStore{stackPointer = sp, stackBottom = sb} = ([Store (Imm c) sp], store{stackPointer = (incStackPointer sb sp 1)})
 
-compileE (N2 op exp1 exp2) store@CompileStore{stackPointer = sp} = (asm1 ++ asm2 ++ [(Load (Addr sp) 1), (Load (Addr (sp+1)) 2), (Calc op 1 2 1), (Store (Addr 1) sp)], store{stackPointer = (sp +1)})
+compileE (N2 op exp1 exp2) store@CompileStore{stackPointer = sp, stackBottom = sb} = (asm1 ++ asm2 ++ [(Load (Addr sp) 1), (Load (Addr (sp+1)) 2), (Calc op 1 2 1), (Store (Addr 1) sp)], store{stackPointer = (incStackPointer sb sp 1)})
     where
         (asm1, store1) = compileE exp1 store
         (asm2, store2) = compileE exp2 store1
         
-compileE (N1 op exp1 ) store@CompileStore{stackPointer = sp} = (asm1 ++ [(Load (Addr sp) 1), (Calc op 1 0 1), (Store (Addr 1) sp)], store{stackPointer = (sp)})
+compileE (N1 op exp1 ) store@CompileStore{stackPointer = sp, stackBottom = sb} = (asm1 ++ [(Load (Addr sp) 1), (Calc op 1 0 1), (Store (Addr 1) sp)], store{stackPointer = (incStackPointer sb sp 1)})
     where
         (asm1, store1) = compileE exp1 store
         
         
-compileE (Var ch) store@CompileStore{stackPointer = sp} = ([(Load (Addr addr) 1), (Store (Addr 1) sp)], store{stackPointer = sp + 1})
+compileE (Var ch) store@CompileStore{stackPointer = sp, stackBottom = sb} = ([(Load (Addr addr) 1), (Store (Addr 1) sp)], store{stackPointer = (incStackPointer sb sp 1)})
     where
         addr = getAddr ch store
         
@@ -56,20 +56,28 @@ compileE (Var ch) store@CompileStore{stackPointer = sp} = ([(Load (Addr addr) 1)
 compileP :: Program -> CompileStore -> ([Assembly], CompileStore)
 compileP [] st = ([], st)
 
-compileP ((Assign (Var e) exp2):xs)  store@CompileStore{lookupTable = lt, stackPointer = sp} = (asm ++ [(Load (Addr sp) 1), (Store (Addr 1) addr)] ++ asmProg, finalStore)
+compileP ((Assign (Var e) exp2):xs)  store@CompileStore{lookupTable = lt, stackPointer = sp, stackBottom = sb} = (asm ++ [(Load (Addr sp) 1), (Store (Addr 1) addr)] ++ asmProg, finalStore)
     where
         (asm, newStore) = compileE exp2 store
         (addr, newerStore) = (getAddrOrFree e newStore)
-        (asmProg, finalStore) = compileP xs newerStore
+        (asmProg, finalStore) = compileP xs newerStore{stackPointer = sb}
 
-compileP ((While exp stats):xs) store = (asmExp ++ [(CJump 2), (Jump (lenProg + 2))] ++ asmStats ++ [(Jump (-(2 + lenProg + lenExp)))] ++ asmProg, finalStore)
+compileP ((While exp stats):xs) store@CompileStore{stackPointer = sp, stackBottom = sb} = (asmExp ++ [(CJump 2), (Jump (lenProg + 2))] ++ asmStats ++ [(Jump (-(2 + lenProg + lenExp)))] ++ asmProg, finalStore)
     where
         (asmExp, newStore) = compileE exp store
         (asmStats, newerStore) = compileP stats newStore
         lenExp = length asmExp
         lenProg = length asmStats
-        (asmProg, finalStore) = compileP xs newerStore
+        (asmProg, finalStore) = compileP xs newerStore{stackPointer = sb}
 
+compileP ((If exp stat1 stat2):xs) store@CompileStore{stackPointer = sp, stackBottom = sb} = (asm ++ [(CJump (lenElse + 2))] ++ asmelse ++ [(Jump (lenIf + 1))] ++ asmif, newStore)
+    where
+        (asm, newStore) = compileE exp store
+        (asmif, ifStore) = compileP stat1 newStore -- if and else should not make adaptations to the state of the store, is this correct?
+        (asmelse, elseStore) = compileP stat2 newStore
+        (asmProg, finalStore) = compileP xs store{stackPointer = sb}
+        lenIf = length asmif
+        lenElse = length asmelse
         
 fixJump :: [Assembly] -> Int -> [Assembly]
 fixJump [] _ = []
@@ -77,12 +85,8 @@ fixJump ((CJump i):xs) line = (CJump (line + i)) : fixJump xs (line+1)
 fixJump ((Jump i):xs) line = (Jump (line +i)) : fixJump xs (line+1)
 fixJump (x:xs) line = x : fixJump xs (line+1)
 
-{-compileP (((If exp stat1 stat2):xs), store)
-    where
-        (asm, newStore) = compileE exp store
-        (asmif, ifStore) = compileP stat1 newStore
-        (asmelse, elseStore) = compileP stat2 newStore
--}
+
+
 getAddrOrFree :: Char -> CompileStore -> (Int, CompileStore)
 getAddrOrFree ch store@CompileStore{lookupTable = lt, stackBottom = sb}
     | ch `elem` [(fst x) | x <- lt] = (hitAddr, store)
@@ -93,6 +97,10 @@ getAddrOrFree ch store@CompileStore{lookupTable = lt, stackBottom = sb}
         hitAddr = [i | (c,i) <- lt, c == ch] !! 0
         notAddr = ([1..(dmemsize-sb-1)] \\ [(snd x) | x <- lt]) !! 0
         
+incStackPointer :: Int -> Int -> Int -> Int
+incStackPointer min curr inc 
+    | curr + inc < dmemsize && curr + inc >= min = curr + inc
+    | otherwise = error ("Out of stack, requested " ++ (show (curr + inc)) ++ " where stack is between " ++ (show min) ++ " and " ++ (show dmemsize))
         
 getAddr :: Char -> CompileStore -> Int
 getAddr ch store@CompileStore{lookupTable = lt} 
@@ -102,12 +110,4 @@ getAddr ch store@CompileStore{lookupTable = lt}
 
 initStore :: CompileStore
 initStore = CompileStore{lookupTable = [], stackBottom = 4, stackPointer = 4}   
-
-vierkeervier = [
-    (Assign (Var 'a') (Const 4)),
-    (Assign (Var 'b') (Const 4)),
-    (Assign (Var 'r') (Const 0)),
-    (While (N2 Gt (Var 'b') (Const 0)) [
-        (Assign (Var 'r') (N2 Add (Var 'r') (Var 'a'))),
-        (Assign (Var 'b') (N2 Sub  (Var 'b') (Const 1)))])]
         

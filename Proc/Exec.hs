@@ -38,9 +38,12 @@ main = putStr . unlines . map show $ test programma
 -----------------------------------}
 
 -- Hier de verwijzing aanpassen
-programma = testwhile
+programma = vierkeerviercomp
 
 -- Hier extra programmas definieren
+vierkeerviercomp = compile vierkeervier
+complexmathcom = compile complexMath
+ifelsecom = compile ifelseexample
 testprog = compile [Assign (Var 'a') ((N2 Add (N2 Add (Const 4) (Const 7)) (Const 4)))]
 testprog1 = compile [Assign (Var 'a') ((N1 Not (Const 0)))]
 testwhile = compile [
@@ -179,3 +182,26 @@ prog3 = [ Load (Imm 3) 1
 	, Calc Add 1 2 1
 	, EndProg
 	]
+
+
+{-- Programs that should be compilable -}
+
+vierkeervier = [
+    (Assign (Var 'a') (Const 4)),
+    (Assign (Var 'b') (Const 4)),
+    (Assign (Var 'r') (Const 0)),
+    (While (N2 Gt (Var 'b') (Const 0)) [
+        (Assign (Var 'r') (N2 Add (Var 'r') (Var 'a'))),
+        (Assign (Var 'b') (N2 Sub  (Var 'b') (Const 1)))])]
+
+
+complexMath = [Assign (Var 'a') (N2 Add (N2 Mul (Const 4) (Const 5)) (N2 Div (Const 10) (Const 2))), (Assign (Var 'b') (Const 3))]
+
+
+ifelseexample = [
+    (Assign (Var 'a') (Const 3)),
+    (If 
+        (N2 Lt (Var 'a') (Const 2)) 
+            [(Assign (Var 'a') (Const 9))] 
+            [(Assign (Var 'b') (Const 14))]
+    )]
