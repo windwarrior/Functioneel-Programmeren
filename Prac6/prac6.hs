@@ -124,7 +124,7 @@ makeEdgesBlack :: [Edge] -> [Edge]
 makeEdgesBlack [] =[]
 makeEdgesBlack ((ch1, ch2, col, n):xs) = (ch1, ch2, black, n) : (makeEdgesBlack xs)
 
-------------------------------------------------------------------
+------------------------------------------------------------------2a
 
 testVolledigeGraaf edges nodes = volledigeGraaf edges' nodes'
     where
@@ -152,7 +152,7 @@ getCharsEdges ((ch1, ch2, co, n):xs) = (ch1, ch2) : (getCharsEdges xs)
 listComprehension (x:[]) = []
 listComprehension (x:xs) = [(i,j) | i <- [x], j <- xs] ++ listComprehension xs
 
--------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------2b
 
 isSamenhangend :: [Edge] -> [(Char, Color, Point)] -> Bool
 isSamenhangend edges ((ch, co, po):xs) = bereikbaar == nodes'
@@ -174,9 +174,7 @@ getNeighbours ch ((ch1, ch2, co, n):xs)
     | ch == ch1 || ch == ch2 = ((ch1, ch2, co, n) : (getNeighbours ch xs))
     | otherwise = getNeighbours ch xs
 
-------------------------------------------------------------------------------------------
-
-test = colorSubgraphs [] testNodes2c (getSubgrafen [] testNodes2c) [red,blue,green]
+------------------------------------------------------------------------------------------2c
 
 kleur :: Graph -> [Color] -> Graph
 kleur myGraph@Graph{nodes = nodes, directed = directed, edges = edges} col 
@@ -189,15 +187,46 @@ colorSubgraphs _ [] _ _ = []
 colorSubgraphs edges ((ch, co, po):xs) subgrafen colors = (ch, (colors !! i ), po): (colorSubgraphs edges xs subgrafen colors)
     where
         i = getSubgraphNumber ch subgrafen
-        
+
+getSubgraphNumber :: Char -> [[Char]] -> Int
 getSubgraphNumber ch (x:xs)
     | ch `elem` x = 0
     | otherwise = 1 + getSubgraphNumber ch xs
 
+getSubgrafen :: [Edge] -> [(Char, Color,Point)] -> [[Char]]
 getSubgrafen edges nodes = grafen
     where
         nodes' = getCharsNodes nodes
         grafen = nub (map (\x -> sort $ nub x) (map (\x -> getBereikbareNodes x edges) nodes'))
+
+------------------------------------------------------------------------------------------3a
+
+kanNodeBereiken :: Char -> Char -> [Edge] -> Bool
+kanNodeBereiken a b edges = b `elem` bereikbaar
+    where 
+        bereikbaar = sort (nub (getBereikbareNodesDirected a edges))
+
+getBereikbareNodesDirected :: Char -> [Edge] -> [Char]
+getBereikbareNodesDirected ch [] = [ch  ]
+getBereikbareNodesDirected ch edges = ch : (edge ++ (concat (map (\x -> getBereikbareNodesDirected x unvisited) edge)))
+    where 
+       buren = getNeighboursDirected ch edges
+       edge = concat (map (\(x,y) -> [x,y]) (getCharsEdges buren))
+       unvisited = edges \\ buren
+       
+getNeighboursDirected :: Char -> [Edge] -> [Edge]
+getNeighboursDirected ch [] = []
+getNeighboursDirected ch ((ch1, ch2, co, n):xs)
+    | ch == ch1 = ((ch1, ch2, co, n) : (getNeighbours ch xs))
+    | otherwise = getNeighboursDirected ch xs
+
+------------------------------------------------------------------------------------------3b
+
+vindPadenVan a b edges visited = (buren, unvisited, onPath)
+    where
+        buren = (map (\(_, x, _, _) -> x) (getNeighboursDirected a edges)) 
+        unvisited = buren \\ visited
+        onPath = filter (\x -> kanNodeBereiken x b edges) unvisited
 
 ------------------------------------------------------------------------------------------
 equal :: (Char, Color, Point) -> (Char, Color, Point) -> Bool
@@ -229,3 +258,5 @@ testEdges2a = [('b', 'a', red,1),('a', 'd', red,1),('a', 'c', red,1),('d', 'b', 
 testEdges2b = [('b', 'a', red,1),('c', 'd', red,1)]
 
 testNodes2c = [('a', red, (3,4)),('b', red, (3,4)),('c', red, (3,4))]
+testEdges3a = [('a', 'b', red, 1),('a', 'c', red, 1), ('d', 'a', red, 1), ('c', 'd', red, 1)]
+testEdges3b = [('a', 'c', red, 1),('a', 'd', red, 1), ('a', 'e', red, 1), ('c', 'g', red, 1), ('c', 'b', red, 1), ('d', 'b', red, 1), ('e', 'b', red, 1),('e', 'f', red, 1), ('g', 'h', red, 1), ('a', 'i', red, 1), ('j', 'b', red, 1)]
