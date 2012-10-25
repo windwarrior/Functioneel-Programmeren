@@ -38,12 +38,13 @@ main = putStr . unlines . map show $ test programma
 -----------------------------------}
 
 -- Hier de verwijzing aanpassen
-programma = vierkeerviercomp
+programma = simpleexpressioncomp
 
 -- Hier extra programmas definieren
 vierkeerviercomp = compile vierkeervier
 complexmathcom = compile complexMath
 ifelsecom = compile ifelseexample
+simpleexpressioncomp = compile simpleexpression
 testprog = compile [Assign (Var 'a') ((N2 Add (N2 Add (Const 4) (Const 7)) (Const 4)))]
 testprog1 = compile [Assign (Var 'a') ((N1 Not (Const 0)))]
 testwhile = compile [
@@ -205,3 +206,6 @@ ifelseexample = [
             [(Assign (Var 'a') (Const 9))] 
             [(Assign (Var 'b') (Const 14))]
     )]
+
+simpleexpression = [
+    (Assign (Var 'a') (N2 Add (N2 Add (Const 4) (Const 5)) (N2 Add (Const 7) (Const 1))))]
