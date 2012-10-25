@@ -6,6 +6,8 @@ import Sprockell
 import Brandhout
 import Prelude
 
+import Debug.Trace
+
 data Tick = Tick
 	deriving (Eq,Show)
 
@@ -21,10 +23,10 @@ exec prog state (i:is)
 
 
 test prog = output prog initstate
-          : exec testprog1 initstate clock
+          : exec prog initstate clock
 
 
-main = putStr . unlines . map show $ test testprog1
+main = putStr . unlines . map show $ test programma
 
 
 {-----------------------------------
@@ -35,12 +37,25 @@ main = putStr . unlines . map show $ test testprog1
 | - define your own output function.
 -----------------------------------}
 
-testprog = fst $ compileP [Assign (Var 'a') ((N2 OpAdd (N2 OpAdd (Const 4) (Const 7)) (Const 4)))] initStore
-testprog1 = fst $ compileP [(While (N2 ] initStore
+-- Hier de verwijzing aanpassen
+programma = testwhile
+
+-- Hier extra programmas definieren
+testprog = compile [Assign (Var 'a') ((N2 Add (N2 Add (Const 4) (Const 7)) (Const 4)))]
+testprog1 = compile [Assign (Var 'a') ((N1 Not (Const 0)))]
+testwhile = compile [
+        Assign (Var 'a') (Const 1),
+        While (N2 Eq (Var 'a') (Const 1)) [Assign (Var 'a') (Const 0)],
+        Assign (Var 'a') (Const 1)
+    ]
 
 output prog (state@State{..}) = (dmem, regbank, pc, prog!!pc) -- , regbank!!2, regbank!!3)
 						-- Note: field names from the state
 						-- 	 are usable as variables
+
+printMore :: [Assembly] -> Int -> Char
+printMore [] i = ' '
+printMore (x:xs) i = trace ((show i) ++ " " ++ (show x)) (printMore xs (i+1))
 
 
 {-----------------------------------

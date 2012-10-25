@@ -1,2 +1,12 @@
 -- De statements in een if/else block zouden de state van de CompileStore kunnen aanpassen, wat doen we daarmee :)?
--- 
+-- Verslag keuze errors gooien bij ongeassignde variabelen.
+
+Beginprog
+Assign 'e' (Const 2)
+if (3 > 2)
+    Assign 'g' (Const 3)
+else
+    Assign 'b' (Const 3)
+Assign 'e' (Var 'b') -- Hier mag hij een error gooien
+Endprog    
+
