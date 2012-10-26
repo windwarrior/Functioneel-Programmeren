@@ -218,6 +218,6 @@ ifElseLocalScope = [
         (N2 Lt (Var 'a') (Const 4))
             [(Assign (Var 'b') (Const 3)), (Assign (Var 'a') (Var 'b'))]
             []
-    )
+    ),
     (Assign (Var 'c') (Var 'b')) -- Should raise an error, b undefined
     ]

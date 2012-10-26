@@ -69,7 +69,7 @@ compileP ((While exp stats):xs) store@CompileStore{stackPointer = sp, stackBotto
         lenProg = length asmStats
         (asmProg, finalStore) = compileP xs store{stackPointer = sb}
 
-compileP ((If exp stat1 stat2):xs) store@CompileStore{stackPointer = sp, stackBottom = sb} = (asm ++ [(CJump (lenElse + 2))] ++ asmelse ++ [(Jump (lenIf + 1))] ++ asmif, newStore)
+compileP ((If exp stat1 stat2):xs) store@CompileStore{stackPointer = sp, stackBottom = sb} = (asm ++ [(CJump (lenElse + 2))] ++ asmelse ++ [(Jump (lenIf + 1))] ++ asmif ++ asmProg, finalStore)
     where
         (asm, newStore) = compileE exp store -- the results of this parse step can be discarded, it it only possibly changing the state of the stackpointer, which is resetted after this step
         (asmif, ifStore) = compileP stat1 store{stackPointer = sb} -- if and else should not make adaptations to the state of the store
