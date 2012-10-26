@@ -50,7 +50,10 @@ doPrac6 myStore (KeyIn 'd') = (myStore', [])
     where
         myStore' = myStore{isDpressed = True}
         
-
+doPrac6 myStore (KeyIn 'v') = (myStore', [])
+    where
+        myStore' = myStore{isVpressed = True}
+        
 doPrac6 myStore@MyStore{myGraph = graph} (KeyIn 'f') = (myStore', o)
 	where
 		graph' = (kleur graph [red, green, blue])
@@ -58,12 +61,14 @@ doPrac6 myStore@MyStore{myGraph = graph} (KeyIn 'f') = (myStore', o)
 		o = [DrawPicture $ drawGraph graph']
 
 doPrac6 myStore@MyStore{myGraph = graph, isCpressed = True, pathList = pl} (KeyIn 'c')  
-    | length pl > 0 = (myGraph{myGraph = graphEdgesBlack}, o)
-    | otherwise = (myGraph, [])
+    | length pl > 0 = (myStore{myGraph = graphEdgesBlack, pathList = tail pl}, o)
+    | otherwise = (myStore, [])
     
     where
         graphEdgesBlack = graph{edges = makeEdgesBlack (edges graph)}
-        graphPlotSingleEdge = graphEdgesBlack{edges = , pathList = tail p1}
+        path = head pl
+        coloredPath = colorEdgesRed path
+        graphPlotSingleEdge = graphEdgesBlack{edges = ((edges graph) \\ path) ++ coloredPath}
         o = [DrawPicture $ drawGraph graphPlotSingleEdge]
 
 
