@@ -18,13 +18,12 @@ data MyStore = MyStore
     isBpressed :: Bool,
     isDpressed :: Bool,
     isVpressed :: Bool,
-    isCpressed :: Bool,
     node1 :: Node,
     node2 :: Node,
     pathList :: [[Edge]]
   }
 
-initPrac6 graph = MyStore {myGraph = graph, isEpressed = False, isBpressed = False, isDpressed = False, isVpressed = False, isCpressed = False, node1 = ('_', red, (0,0)), node2 =  ('_', red, (0,0)), pathList = []}
+initPrac6 graph = MyStore {myGraph = graph, isEpressed = False, isBpressed = False, isDpressed = False, isVpressed = False, node1 = ('_', red, (0,0)), node2 =  ('_', red, (0,0)), pathList = []}
 
 main = doGraph doPrac6 initPrac6 myGraph drawMypracBottomLine
 
@@ -60,15 +59,19 @@ doPrac6 myStore@MyStore{myGraph = graph} (KeyIn 'f') = (myStore', o)
 		myStore' = myStore{myGraph=graph'}
 		o = [DrawPicture $ drawGraph graph']
 
-doPrac6 myStore@MyStore{myGraph = graph, isCpressed = True, pathList = pl} (KeyIn 'c')  
-    | length pl > 0 = (myStore{myGraph = graphEdgesBlack, pathList = tail pl}, o)
-    | otherwise = (myStore, [])
+
+doPrac6 myStore@MyStore{myGraph = graph, pathList = pl} (KeyIn 'c')  
+    | length pl > 0 = trace ("ik kom hier nog!") (myStore{myGraph = graphPlotSingleEdge, pathList = tail pl}, o)
+    | otherwise = trace ("huhwat, er zijn geen paden?") (myStore{myGraph = blackandwhitegraph, node1 = ('_', red, (0,0)), node2 =  ('_', red, (0,0)), isVpressed = False}, o_other)
     where
         graphEdgesBlack = graph{edges = makeEdgesBlack (edges graph)}
+        blackandwhitegraph = makeBlackAndWhite graph
         path = head pl
         coloredPath = colorEdgesRed path
-        graphPlotSingleEdge = graphEdgesBlack{edges = ((edges graph) \\ path) ++ coloredPath}
+        graphPlotSingleEdge = trace (show coloredPath) $ graphEdgesBlack{edges = ((edges graphEdgesBlack) \\ path) ++ coloredPath}
         o = [DrawPicture $ drawGraph graphPlotSingleEdge]
+        o_other = [DrawPicture $ drawGraph blackandwhitegraph]
+
 
 doPrac6 myStore@MyStore{myGraph = graph, isDpressed = True} (MouseDown (x,y))
 	| n == Nothing = (myStore{isDpressed = False}, [])
@@ -101,19 +104,19 @@ doPrac6 myStore@MyStore{myGraph = graph, isBpressed = True} (MouseDown (x,y))
 		Just i = n
         
 doPrac6 myStore@MyStore{myGraph = graph, isVpressed = True, node1 = (n1ch, n1co, n1po), node2 = (n2ch, n2co, n2po)} (MouseDown (x,y))
-    | n == Nothing || (n1ch /= '_' && n1ch /= '_') = (myStore{isVpressed = False, myGraph = blackandwhitegraph, pathList = []}, o_not_set)
-    | (n1ch /= '_') = (myStoreOneSet, o)
-    | otherwise = (myStoreTwoSet, o)
+    | n == Nothing || (n1ch /= '_' && n2ch /= '_') = (myStore{isVpressed = False, node1 = ('_', red, (0,0)), node2 =  ('_', red, (0,0)), myGraph = blackandwhitegraph, pathList = []}, o_not_set)
+    | (n1ch /= '_') = trace ("two set") (myStoreTwoSet, o)
+    | otherwise = trace ("one set") (myStoreOneSet, o)
     where
-        colorGraph = redColorNode graph i
+        colorGraph = redColorNode graph (n3ch, n3co, n3po)
         o = [DrawPicture $ drawGraph colorGraph]
         blackandwhitegraph = makeBlackAndWhite graph
         o_not_set = [DrawPicture $ drawGraph blackandwhitegraph]
-        myStoreOneSet = myStore{myGraph = colorGraph, node1 = i}
-        paths = (vindPadenVan n1ch n2ch (edges graph) ((n1ch):""))
-        myStoreTwoSet = myStore{myGraph = colorGraph, node2 = i, pathList = map (\x -> charsToPath x (edges graph)) paths}        
+        myStoreOneSet = myStore{myGraph = colorGraph, node1 = (n3ch, n3co, n3po)}
+        paths = trace (show (n1ch, n3ch)) $ (vindPadenVan n1ch n3ch (edges graph) ((n1ch):""))
+        myStoreTwoSet = trace (show paths) $ myStore{myGraph = colorGraph, node2 = (n3ch, n3co, n3po), pathList = map (\x -> charsToPath x (edges graph)) paths}        
         n = onNode (nodes graph) (x,y)
-        Just i = n
+        Just (n3ch, n3co, n3po) = n
         
 
 doPrac6 myStore i = (myStore,[])
@@ -282,6 +285,7 @@ getEdge ch1 ch2 ((ch3, ch4, co, n):xs)
     
     
 colorEdgesRed :: [Edge] -> [Edge]
+colorEdgesRed [] = []
 colorEdgesRed ((ch1, ch2, co, n):xs) = (ch1, ch2, red, n):(colorEdgesRed xs)
 ------------------------------------------------------------------------------------------3c
 
