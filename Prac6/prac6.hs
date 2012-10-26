@@ -16,10 +16,15 @@ data MyStore = MyStore
     myGraph :: Graph,
     isEpressed :: Bool,
     isBpressed :: Bool,
-    isDpressed :: Bool
+    isDpressed :: Bool,
+    isVpressed :: Bool,
+    isCpressed :: Bool,
+    node1 :: Node,
+    node2 :: Node,
+    pathList :: [[Edge]]
   }
 
-initPrac6 graph = MyStore {myGraph = graph, isEpressed = False, isBpressed = False, isDpressed = False}
+initPrac6 graph = MyStore {myGraph = graph, isEpressed = False, isBpressed = False, isDpressed = False, isVpressed = False, isCpressed = False, node1 = ('_', red, (0,0)), node2 =  ('_', red, (0,0)), pathList = []}
 
 main = doGraph doPrac6 initPrac6 myGraph drawMypracBottomLine
 
@@ -44,6 +49,7 @@ doPrac6 myStore (KeyIn 'b') = (myStore', [])
 doPrac6 myStore (KeyIn 'd') = (myStore', [])
     where
         myStore' = myStore{isDpressed = True}
+        
 
 doPrac6 myStore@MyStore{myGraph = graph} (KeyIn 'f') = (myStore', o)
 	where
@@ -51,11 +57,22 @@ doPrac6 myStore@MyStore{myGraph = graph} (KeyIn 'f') = (myStore', o)
 		myStore' = myStore{myGraph=graph'}
 		o = [DrawPicture $ drawGraph graph']
 
+doPrac6 myStore@MyStore{myGraph = graph, isCpressed = True, pathList = pl} (KeyIn 'c')  
+    | length pl > 0 = (myGraph{myGraph = graphEdgesBlack}, o)
+    | otherwise = (myGraph, [])
+    
+    where
+        graphEdgesBlack = graph{edges = makeEdgesBlack (edges graph)}
+        graphPlotSingleEdge = graphEdgesBlack{edges = , pathList = tail p1}
+        o = [DrawPicture $ drawGraph graphPlotSingleEdge]
+
+
+
 doPrac6 myStore@MyStore{myGraph = graph, isDpressed = True} (MouseDown (x,y))
 	| n == Nothing = (myStore{isDpressed = False}, [])
 	| otherwise = (myStore', o)
 	where
-		graph' = (makeBlackAndWhite graph i)
+		graph' = (makeBlackAndWhite graph)
 		myStore' = myStore{myGraph=graph' , isDpressed = False}
 		o = [DrawPicture $ drawGraph graph']
 		n = onNode (nodes graph) (x,y)
@@ -80,6 +97,24 @@ doPrac6 myStore@MyStore{myGraph = graph, isBpressed = True} (MouseDown (x,y))
 		o = [DrawPicture $ drawGraph graph']
 		n = onNode (nodes graph) (x,y)
 		Just i = n
+        
+doPrac6 myStore@MyStore{myGraph = graph, isVpressed = True, node1 = (n1ch, n1co, n1po), node2 = (n2ch, n2co, n2po)} (MouseDown (x,y))
+    | n == Nothing || (n1ch /= '_' && n1ch /= '_') = (myStore{isVpressed = False, myGraph = blackandwhitegraph, pathList = []}, o_not_set)
+    | (n1ch /= '_') = (myStoreOneSet, o)
+    | otherwise = (myStoreTwoSet, o)
+    where
+        colorGraph = redColorNode graph i
+        o = [DrawPicture $ drawGraph colorGraph]
+        blackandwhitegraph = makeBlackAndWhite graph
+        o_not_set = [DrawPicture $ drawGraph blackandwhitegraph]
+        myStoreOneSet = myStore{myGraph = colorGraph, node1 = i}
+        paths = (vindPadenVan n1ch n2ch (edges graph) ((n1ch):""))
+        myStoreTwoSet = myStore{myGraph = colorGraph, node2 = i, pathList = map (\x -> charsToPath x (edges graph)) paths}        
+        n = onNode (nodes graph) (x,y)
+        Just i = n
+        
+
+
         
 doPrac6 myStore i = (myStore,[])
 
@@ -113,8 +148,8 @@ blueColorNodeList ((ch, co, po):xs) ch1
 
 -----------------COLOR WHITE-------------------------------------
 
-makeBlackAndWhite:: Graph-> (Char, Color, Point) -> Graph
-makeBlackAndWhite myGraph@Graph{nodes = nodes, directed = directed, edges = edges} nod = myGraph{nodes = makeNodesWhite nodes, directed = directed, edges = makeEdgesBlack edges}
+makeBlackAndWhite:: Graph -> Graph
+makeBlackAndWhite myGraph@Graph{nodes = nodes, directed = directed, edges = edges} = myGraph{nodes = makeNodesWhite nodes, directed = directed, edges = makeEdgesBlack edges}
 
 makeNodesWhite :: [(Char, Color, Point)] -> [(Char, Color, Point)]
 makeNodesWhite [] = []
