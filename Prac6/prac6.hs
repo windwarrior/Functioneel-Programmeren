@@ -63,15 +63,12 @@ doPrac6 myStore@MyStore{myGraph = graph} (KeyIn 'f') = (myStore', o)
 doPrac6 myStore@MyStore{myGraph = graph, isCpressed = True, pathList = pl} (KeyIn 'c')  
     | length pl > 0 = (myStore{myGraph = graphEdgesBlack, pathList = tail pl}, o)
     | otherwise = (myStore, [])
-    
     where
         graphEdgesBlack = graph{edges = makeEdgesBlack (edges graph)}
         path = head pl
         coloredPath = colorEdgesRed path
         graphPlotSingleEdge = graphEdgesBlack{edges = ((edges graph) \\ path) ++ coloredPath}
         o = [DrawPicture $ drawGraph graphPlotSingleEdge]
-
-
 
 doPrac6 myStore@MyStore{myGraph = graph, isDpressed = True} (MouseDown (x,y))
 	| n == Nothing = (myStore{isDpressed = False}, [])
@@ -119,8 +116,6 @@ doPrac6 myStore@MyStore{myGraph = graph, isVpressed = True, node1 = (n1ch, n1co,
         Just i = n
         
 
-
-        
 doPrac6 myStore i = (myStore,[])
 
         
@@ -164,7 +159,7 @@ makeEdgesBlack :: [Edge] -> [Edge]
 makeEdgesBlack [] =[]
 makeEdgesBlack ((ch1, ch2, col, n):xs) = (ch1, ch2, black, n) : (makeEdgesBlack xs)
 
-------------------------------------------------------------------2a
+-------------------------------------------------------------------------------------------2a
 
 testVolledigeGraaf edges nodes = volledigeGraaf edges' nodes'
     where
@@ -268,7 +263,7 @@ vindPadenVan a b edges visited
     | otherwise = [b:""]
     where
         buren = (map (\(_, x, _, _) -> x) (getNeighboursDirected a edges)) 
-        unvisited = buren \\ visited
+        unvisited = buren \\ (a:visited)
         onPath = filter (\x -> kanNodeBereiken x b edges) unvisited
 
 charsToPath :: [Char] -> [Edge] -> [Edge]
@@ -335,4 +330,5 @@ testEdges2b = [('b', 'a', red,1),('c', 'd', red,1)]
 
 testNodes2c = [('a', red, (3,4)),('b', red, (3,4)),('c', red, (3,4))]
 testEdges3a = [('a', 'b', red, 1),('a', 'c', red, 1), ('d', 'a', red, 1), ('c', 'd', red, 1)]
-testEdges3b = [('z', 'a', red,1),('a', 'c', red, 1),('a', 'd', red, 1), ('a', 'e', red, 1), ('c', 'g', red, 1), ('c', 'b', red, 1), ('d', 'b', red, 1), ('f', 'b', red, 1),('e', 'f', red, 1), ('g', 'h', red, 1), ('a', 'i', red, 1), ('j', 'b', red, 1),('z', 'c', red, 1)]
+testEdges3b = [('z', 'a', black,1),('a', 'c', red, 1),('a', 'd', red, 1), ('a', 'e', red, 1), ('c', 'g', red, 1), ('c', 'b', red, 1), ('d', 'b', red, 1), ('f', 'b', red, 1),('e', 'f', red, 1), ('g', 'h', red, 1), ('a', 'i', red, 1), ('j', 'b', red, 1),('z', 'c', red, 1)]
+testEdges3 = [('a', 'c', black, 1),('b', 'c', black, 1),('d', 'c', black, 1),('d', 'b', black, 1),('c', 'b', black, 1),('e', 'b', black, 1),('c', 'd', black, 1),('e', 'd', black, 1),('d', 'e', black, 1),('b', 'f', black, 1)]
