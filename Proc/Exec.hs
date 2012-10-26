@@ -38,9 +38,10 @@ main = putStr . unlines . map show $ test programma
 -----------------------------------}
 
 -- Hier de verwijzing aanpassen
-programma = simpleexpressioncomp
+programma = localcompile
 
 -- Hier extra programmas definieren
+localcompile = compile ifElseLocalScope
 vierkeerviercomp = compile vierkeervier
 complexmathcom = compile complexMath
 ifelsecom = compile ifelseexample
@@ -209,3 +210,14 @@ ifelseexample = [
 
 simpleexpression = [
     (Assign (Var 'a') (N2 Add (N2 Add (Const 4) (Const 5)) (N2 Add (Const 7) (Const 1))))]
+    
+    
+ifElseLocalScope = [
+    (Assign (Var 'a') (Const 3)),
+    (If
+        (N2 Lt (Var 'a') (Const 4))
+            [(Assign (Var 'b') (Const 3)), (Assign (Var 'a') (Var 'b'))]
+            []
+    )
+    (Assign (Var 'c') (Var 'b')) -- Should raise an error, b undefined
+    ]

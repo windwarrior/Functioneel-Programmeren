@@ -1,4 +1,3 @@
--- De statements in een if/else block zouden de state van de CompileStore kunnen aanpassen, wat doen we daarmee :)?
 -- Verslag keuze errors gooien bij ongeassignde variabelen.
 
 Beginprog
