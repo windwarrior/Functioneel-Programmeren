@@ -55,7 +55,7 @@ compileE (Var ch) store@CompileStore{stackPointer = sp, stackBottom = sb} = ([(L
 compileP :: Program -> CompileStore -> ([Assembly], CompileStore)
 compileP [] st = ([], st)
 
-compileP ((Assign (Var e) exp2):xs)  store@CompileStore{lookupTable = lt, stackPointer = sp, stackBottom = sb} = (asm ++ [(Store (Addr 1) addr)] ++ asmProg, finalStore)
+compileP ((Assign (Var e) exp2):xs)  store@CompileStore{lookupTable = lt, stackPointer = sp, stackBottom = sb} = (asm ++ [(Load (Addr sp) 1), (Store (Addr 1) addr)] ++ asmProg, finalStore)
     where
         (asm, newStore) = compileE exp2 store
         (addr, newerStore) = (getAddrOrFree e newStore) -- Hier wordt de lookuptable aangepast, dus deze store moet meegegeven worden

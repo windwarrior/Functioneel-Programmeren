@@ -38,7 +38,7 @@ main = putStr . unlines . map show $ test programma
 -----------------------------------}
 
 -- Hier de verwijzing aanpassen
-programma = localcompile
+programma = vierkeerviercomp
 
 -- Hier extra programmas definieren
 localcompile = compile ifElseLocalScope
